@@ -1,0 +1,5 @@
+torch==2.*
+pre-commit==3.*
+pytest==7.*
+fastapi==0.*
+openbb-chat==0.*
