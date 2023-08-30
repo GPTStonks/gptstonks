@@ -19,5 +19,18 @@ WORKDIR /api/fastapi
 # Expose port for FastAPI app to run on
 EXPOSE 8000
 
+# Create OpenSSL conf file for OECD data access within openbb
+RUN echo 'openssl_conf = openssl_init\n\
+\n\
+[openssl_init]\n\
+ssl_conf = ssl_sect\n\
+\n\
+[ssl_sect]\n\
+system_default = system_default_sect\n\
+\n\
+[system_default_sect]\n\
+Options = UnsafeLegacyRenegotiation'\
+> /api/fastapi/openssl.cnf
+
 # Run the FastAPI app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--env-file", ".env"]
