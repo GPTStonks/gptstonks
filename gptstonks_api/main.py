@@ -5,16 +5,39 @@ import uuid
 
 import pandas as pd
 import torch
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from openbb_chat.classifiers.stransformer import STransformerZeroshotClassifier
 from openbb_chat.llms.guidance_wrapper import GuidanceWrapper
 from openbb_terminal.sdk import openbb
 from rich.progress import track
-from utils import get_func_parameter_names
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
+from .utils import get_func_parameter_names
 
-app = FastAPI()
+description = """
+GPTStonks API allows interacting with [OpenBB](https://openbb.co/) using natural language.
+
+# Features
+The API supports the following features:
+- All LLMs on [Hugging Face](https://huggingface.co/).
+- Multiple text embedding models on Hugging Face.
+- Asynchronous processing.
+"""
+
+app = FastAPI(
+    title="GPTStonks API",
+    description=description,
+    summary="API to interact with OpenBB using natural language.",
+    version="0.0.1",
+    contact={
+        "name": "GPTStonks",
+        "email": "gptstonks@gmail.com",
+    },
+    license_info={
+        "name": "Apache 2.0",
+        "identifier": "MIT",
+    },
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -73,6 +96,7 @@ async def run_model_in_background(job_id: str, query: str):
     if len(param_names) == 0:
         # No parameters, just call the function without using the LLM
         final_func_call = func_def[: func_def.index("(") + 1] + ")"
+        print(f"{final_func_call=}")
         try:
             res = eval(final_func_call)
             if isinstance(res, pd.DataFrame):
@@ -83,6 +107,7 @@ async def run_model_in_background(job_id: str, query: str):
                 res = str(res)
             results_store[job_id] = {"result": res}
         except Exception as e:
+            print(e)
             results_store[job_id] = {"error": "Error processing the query. Please try again!"}
         finally:
             return
@@ -103,6 +128,7 @@ async def run_model_in_background(job_id: str, query: str):
     # Call the function with inferred parameters
     inner_func_str = ",".join([executed_program[key] for key in param_keys])
     final_func_call = func_def[: func_def.index("(") + 1] + inner_func_str + ")"
+    print(f"{final_func_call=}")
     try:
         res = eval(final_func_call)
         if isinstance(res, pd.DataFrame):
@@ -113,6 +139,7 @@ async def run_model_in_background(job_id: str, query: str):
             res = str(res)
         results_store[job_id] = {"result": res}
     except Exception as e:
+        print(e)
         results_store[job_id] = {"error": "Error processing the query. Please try again!"}
     finally:
         return
