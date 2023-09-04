@@ -12,9 +12,12 @@ WORKDIR /api
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirements.txt
 
+# Copy __init__ in parent dir to enable relative imports
+COPY /__init__.py /api/__init__.py
+
 # Copy FastAPI app
-COPY ./fastapi /api/fastapi
-WORKDIR /api/fastapi
+COPY ./gptstonks_api /api/gptstonks_api
+WORKDIR /api/gptstonks_api
 
 # Expose port for FastAPI app to run on
 EXPOSE 8000
@@ -30,7 +33,9 @@ system_default = system_default_sect\n\
 \n\
 [system_default_sect]\n\
 Options = UnsafeLegacyRenegotiation'\
-> /api/fastapi/openssl.cnf
+> /api/gptstonks_api/openssl.cnf
+
+WORKDIR /api
 
 # Run the FastAPI app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--env-file", ".env"]
+CMD ["uvicorn", "gptstonks_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--env-file", "gptstonks_api/.env"]
