@@ -11,8 +11,13 @@ from openbb_chat.classifiers.stransformer import STransformerZeroshotClassifier
 from openbb_chat.llms.guidance_wrapper import GuidanceWrapper
 from openbb_terminal.sdk import openbb
 from rich.progress import track
+from transformers import BitsAndBytesConfig, GPTQConfig
 
-from .utils import get_func_parameter_names
+from .utils import (
+    get_func_parameter_names,
+    get_griffin_template,
+    get_wizardcoder_few_shot_template,
+)
 
 description = """
 GPTStonks API allows interacting with [OpenBB](https://openbb.co/) using natural language.
@@ -70,7 +75,23 @@ def init_data():
             search_str = f"{descr.strip()} Topics: {', '.join(topics)}."
         app.keys.append(search_str)
     app.stransformer = STransformerZeroshotClassifier(app.keys, os.environ["CLASSIFIER_MODEL"])
-    app.guidance_wrapper = GuidanceWrapper(model_id=os.environ["LLM_MODEL"])
+
+    llm_kwargs = {
+        "device_map": {"": 0},
+        "torch_dtype": torch.bfloat16,
+    }
+    if "gptq" not in os.environ["LLM_MODEL"].lower():
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16,
+        )
+        llm_kwargs.update({"quantization_config": bnb_config})
+    app.guidance_wrapper = GuidanceWrapper(
+        model_id=os.environ["LLM_MODEL"],
+        model_kwargs=llm_kwargs,
+    )
 
 
 @app.post("/process_query_async")
@@ -87,48 +108,19 @@ async def process_query_async(request: Request):
 
 
 async def run_model_in_background(job_id: str, query: str):
-    key, _, idx = app.stransformer.classify(query)
+    with torch.inference_mode():
+        keys, _, indices = app.stransformer.rank_k(query, k=3)
+        func_defs = [app.definitions[idx] for idx in indices]
+        func_names = [func_def.split("(")[0] for func_def in func_defs]
 
-    func_def = app.definitions[idx]
-    func_descr = app.descriptions[idx]
+        template = get_wizardcoder_few_shot_template()
+        if "griffin" in os.environ["LLM_MODEL"].lower():
+            template = get_griffin_template()
+        get_code = app.guidance_wrapper(template)
+        code = get_code(func_def=func_defs[0], func_name=func_names[0], query=query)
+        final_func_call = f"{func_names[0]}({code['params'].strip()})"
 
-    param_names = get_func_parameter_names(func_def)
-    if len(param_names) == 0:
-        # No parameters, just call the function without using the LLM
-        final_func_call = func_def[: func_def.index("(") + 1] + ")"
-        print(f"{final_func_call=}")
-        try:
-            res = eval(final_func_call)
-            if isinstance(res, pd.DataFrame):
-                res = res.to_dict(orient="dict")
-            elif res is None:
-                res = "Nothing returned."
-            else:
-                res = str(res)
-            results_store[job_id] = {"result": res}
-        except Exception as e:
-            print(e)
-            results_store[job_id] = {"error": "Error processing the query. Please try again!"}
-        finally:
-            return
-
-    # Guess parameters with LLM
-    param_str = ""
-    param_keys = [f"param_{idx}" for idx, _ in enumerate(param_names)]
-    for idx, param in enumerate(param_names):
-        param_str += f"{param}" + " = {{gen " + f"'{param_keys[idx]}'" + " stop='\n'}}\n"
-
-    template = f"""The Python function `{func_def}` is used to "{func_descr}". Given the prompt "{query}", write the correct parameters for the function using Python:
-```python
-{param_str[:-1]}
-```"""
-    program = app.guidance_wrapper(template)
-    executed_program = program()
-
-    # Call the function with inferred parameters
-    inner_func_str = ",".join([executed_program[key] for key in param_keys])
-    final_func_call = func_def[: func_def.index("(") + 1] + inner_func_str + ")"
-    print(f"{final_func_call=}")
+    # Call OpenBB SDK
     try:
         res = eval(final_func_call)
         if isinstance(res, pd.DataFrame):

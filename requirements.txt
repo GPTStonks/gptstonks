@@ -1,5 +1,6 @@
 torch==2.*
+transformers>=4.33.0
 pre-commit==3.*
 pytest==7.*
 fastapi==0.*
-openbb-chat>=0.0.2
+openbb-chat>=0.0.4
