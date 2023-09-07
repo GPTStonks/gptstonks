@@ -78,7 +78,6 @@ def init_data():
 
     llm_kwargs = {
         "device_map": {"": 0},
-        "torch_dtype": torch.bfloat16,
     }
     if "gptq" not in os.environ["LLM_MODEL"].lower():
         bnb_config = BitsAndBytesConfig(
@@ -124,7 +123,7 @@ async def run_model_in_background(job_id: str, query: str):
     try:
         res = eval(final_func_call)
         if isinstance(res, pd.DataFrame):
-            res = res.to_dict(orient="dict")
+            res = res.dropna().to_dict(orient="dict")
         elif res is None:
             res = "Nothing returned."
         else:
