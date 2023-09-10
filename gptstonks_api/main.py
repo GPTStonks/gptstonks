@@ -15,7 +15,8 @@ from transformers import BitsAndBytesConfig, GPTQConfig
 
 from .utils import (
     get_func_parameter_names,
-    get_griffin_template,
+    get_griffin_few_shot_template,
+    get_griffin_general_template,
     get_wizardcoder_few_shot_template,
 )
 
@@ -74,7 +75,8 @@ def init_data():
         else:
             search_str = f"{descr.strip()} Topics: {', '.join(topics)}."
         app.keys.append(search_str)
-    app.stransformer = STransformerZeroshotClassifier(app.keys, os.environ["CLASSIFIER_MODEL"])
+    with torch.inference_mode():
+        app.stransformer = STransformerZeroshotClassifier(app.keys, os.environ["CLASSIFIER_MODEL"])
 
     llm_kwargs = {
         "device_map": {"": 0},
@@ -87,10 +89,21 @@ def init_data():
             bnb_4bit_compute_dtype=torch.bfloat16,
         )
         llm_kwargs.update({"quantization_config": bnb_config})
-    app.guidance_wrapper = GuidanceWrapper(
+    guidance_wrapper = GuidanceWrapper(
         model_id=os.environ["LLM_MODEL"],
         model_kwargs=llm_kwargs,
     )
+
+    # Code template
+    code_template = get_wizardcoder_few_shot_template()
+    if "griffin" in os.environ["LLM_MODEL"].lower():
+        code_template = get_griffin_few_shot_template()
+    app.get_code = guidance_wrapper(code_template)
+
+    # General knowledge template
+    # For now all models use Griffin template, it should be simple enough
+    general_template = get_griffin_general_template()
+    app.get_answer = guidance_wrapper(general_template)
 
 
 @app.post("/process_query_async")
@@ -108,16 +121,21 @@ async def process_query_async(request: Request):
 
 async def run_model_in_background(job_id: str, query: str):
     with torch.inference_mode():
-        keys, _, indices = app.stransformer.rank_k(query, k=3)
+        keys, scores, indices = app.stransformer.rank_k(query, k=3)
+        if scores[0] < 0.45:
+            results_store[job_id] = {
+                "type": "general_response",
+                "body": app.get_answer(query=query)["answer"],
+            }
+            return
         func_defs = [app.definitions[idx] for idx in indices]
         func_names = [func_def.split("(")[0] for func_def in func_defs]
 
-        template = get_wizardcoder_few_shot_template()
-        if "griffin" in os.environ["LLM_MODEL"].lower():
-            template = get_griffin_template()
-        get_code = app.guidance_wrapper(template)
-        code = get_code(func_def=func_defs[0], func_name=func_names[0], query=query)
+        code = app.get_code(func_def=func_defs[0], func_name=func_names[0], query=query)
         final_func_call = f"{func_names[0]}({code['params'].strip()})"
+
+    # Prevent memory leakage
+    torch.cuda.empty_cache()
 
     # Call OpenBB SDK
     try:
@@ -126,12 +144,17 @@ async def run_model_in_background(job_id: str, query: str):
             res = res.dropna().to_dict(orient="dict")
         elif res is None:
             res = "Nothing returned."
+        elif isinstance(res, list):
+            res = pd.DataFrame(res).dropna().to_dict(orient="dict")
         else:
             res = str(res)
-        results_store[job_id] = {"result": res}
+        results_store[job_id] = {"type": "data", "result_data": res, "body": code["answer"]}
     except Exception as e:
         print(e)
-        results_store[job_id] = {"error": "Error processing the query. Please try again!"}
+        results_store[job_id] = {
+            "type": "error",
+            "body": "Error processing the query. Please try again!",
+        }
     finally:
         return
 
