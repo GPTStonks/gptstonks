@@ -54,23 +54,32 @@ def get_openllama_template():
 ```"""
 
 
-def get_griffin_template():
+def get_griffin_few_shot_template():
     # Template follows Griffin GPTQ format: https://huggingface.co/TheBloke/Griffin-3B-GPTQ
-    return """
+    return """You are a financial personal assistant called GPTStonks and you are having a conversation with a human. You are not allowed to give advice or opinions. You must decline to answer questions not related to finance. Please respond briefly, objectively and politely.
 ### HUMAN:
 Given a query and a Python function, use that function with the correct parameters to return the queried information. Here are some examples:
----
-Query: load the information about Apple from 2019 to 2023
+1. Query: load the information about Apple from 2019 to 2023
 Function: openbb.stocks.load(symbol: str, start_date: Union[datetime.datetime, str, NoneType] = None, interval: int = 1440, end_date: Union[datetime.datetime, str, NoneType] = None, prepost: bool = False, source: str = "YahooFinance", weekly: bool = False, monthly: bool = False, verbose: bool = True)
+Answer: Sure! Here is the information about Apple (AAPL) from 2019-01-01 to 2023-01-01.
 Code: openbb.stocks.load(symbol="AAPL", start_date="2019-01-01", end_date="2023-01-01")
----
-Query: get historical prices for Amazon from 2010-01-01 to 2023-01-01
+2. Query: get historical prices for Amazon from 2010-01-01 to 2023-01-01
 Function: openbb.stocks.ca.hist(similar: List[str], start_date: Optional[str] = None, end_date: Optional[str] = None, candle_type: str = "a")
+Answer: These are the historical prices for Amazon (AMZN) for the requested dates.
 Code: openbb.stocks.ca.hist(similar=["AMZN"], start_date="2010-01-01", end_date="2023-01-01")
----
-Query: {{query}}
+3. Query: {{query}}
 Function: {{func_def}}
 
 ### RESPONSE:
+Answer: {{gen 'answer' stop='\n' temperature=0.9 top_p=0.9}}
 Code: {{func_name}}({{gen 'params' stop=')'}}
 """
+
+
+def get_griffin_general_template():
+    return """You are a financial personal assistant called GPTStonks and you are having a conversation with a human. You are not allowed to give advice or opinions. You must decline to answer questions not related to finance. Please respond briefly, objectively and politely.
+### HUMAN:
+{{query}}
+
+### RESPONSE:
+{{gen 'answer' stop='.\n' temperature=0.9 top_p=0.9}}"""
