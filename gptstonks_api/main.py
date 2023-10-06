@@ -14,6 +14,11 @@ from rich.progress import track
 from transformers import BitsAndBytesConfig, GPTQConfig
 
 from .utils import (
+    get_default_classifier_model,
+    get_default_llm,
+    get_definitions_path,
+    get_definitions_sep,
+    get_embeddings_path,
     get_func_parameter_names,
     get_griffin_few_shot_template,
     get_griffin_general_template,
@@ -58,30 +63,20 @@ results_store = {}
 
 @app.on_event("startup")
 def init_data():
-    df = pd.read_csv(os.environ["CSV_PATH"], sep=os.environ["CSV_SEPARATOR"])
+    df = pd.read_csv(get_definitions_path(), sep=get_definitions_sep())
     df = df.dropna()
-    app.descriptions = df["Descriptions"].tolist()
     app.definitions = df["Definitions"].tolist()
 
-    app.keys = []
-    for idx, descr in track(
-        enumerate(app.descriptions), total=len(app.descriptions), description="Processing..."
-    ):
-        topics = app.definitions[idx][: app.definitions[idx].index("(")].split(".")[1:]
-        if descr.find("[") != -1:
-            descr = descr[: descr.find("[")].strip()
-        if descr.strip()[-1] != ".":
-            search_str = f"{descr.strip()}. Topics: {', '.join(topics)}."
-        else:
-            search_str = f"{descr.strip()} Topics: {', '.join(topics)}."
-        app.keys.append(search_str)
     with torch.inference_mode():
-        app.stransformer = STransformerZeroshotClassifier(app.keys, os.environ["CLASSIFIER_MODEL"])
+        app.stransformer = STransformerZeroshotClassifier(
+            get_embeddings_path(),
+            os.environ.get("CLASSIFIER_MODEL", get_default_classifier_model()),
+        )
 
     llm_kwargs = {
         "device_map": {"": 0},
     }
-    if "gptq" not in os.environ["LLM_MODEL"].lower():
+    if "gptq" not in os.environ.get("LLM_MODEL", get_default_llm()).lower():
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
@@ -90,13 +85,13 @@ def init_data():
         )
         llm_kwargs.update({"quantization_config": bnb_config})
     guidance_wrapper = GuidanceWrapper(
-        model_id=os.environ["LLM_MODEL"],
+        model_id=os.environ.get("LLM_MODEL", get_default_llm()),
         model_kwargs=llm_kwargs,
     )
 
     # Code template
     code_template = get_wizardcoder_few_shot_template()
-    if "griffin" in os.environ["LLM_MODEL"].lower():
+    if "griffin" in os.environ.get("LLM_MODEL", get_default_llm()).lower():
         code_template = get_griffin_few_shot_template()
     app.get_code = guidance_wrapper(code_template)
 
@@ -121,7 +116,7 @@ async def process_query_async(request: Request):
 
 async def run_model_in_background(job_id: str, query: str):
     with torch.inference_mode():
-        keys, scores, indices = app.stransformer.rank_k(query, k=3)
+        _, scores, indices = app.stransformer.rank_k(query, k=3)
         if scores[0] < 0.45:
             results_store[job_id] = {
                 "type": "general_response",
