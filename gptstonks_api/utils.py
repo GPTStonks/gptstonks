@@ -83,3 +83,23 @@ def get_griffin_general_template():
 
 ### RESPONSE:
 {{gen 'answer' stop='.\n' temperature=0.9 top_p=0.9}}"""
+
+
+def get_definitions_path():
+    return "/api/gptstonks_api/data/openbb-docs-v3.2.2-funcs.csv"
+
+
+def get_definitions_sep():
+    return "@"
+
+
+def get_embeddings_path():
+    return "/api/gptstonks_api/data/openbb-docs-v3.2.2.pt"
+
+
+def get_default_classifier_model():
+    return "sentence-transformers/all-MiniLM-L6-v2"
+
+
+def get_default_llm():
+    return "daedalus314/Griffin-3B-GPTQ"

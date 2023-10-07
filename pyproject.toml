@@ -1,0 +1,22 @@
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "GPTStonks", email = "gptstonks@gmail.com"},
+]
+dependencies = [
+    "pre-commit==3.*",
+    "pytest==7.*",
+    "fastapi==0.*",
+    "openbb-chat>=0.0.5",
+    "uvicorn>=0.23.2",
+]
+requires-python = ">=3.10,<3.11.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

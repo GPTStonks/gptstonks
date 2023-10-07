@@ -6,11 +6,14 @@ RUN apt update && apt install -y python3-pip python3-venv
 #Install graphical tool to avoid interaction
 RUN apt install -y libwebkit2gtk-4.0-dev
 
-# Install requirements.txt
-COPY ./requirements.txt /api/requirements.txt
+# Install requirements with PDM
+COPY ./pyproject.toml /api/pyproject.toml
+COPY ./pdm.lock /api/pdm.lock
 WORKDIR /api
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install -r requirements.txt
+RUN pip install -U pip setuptools wheel
+RUN pip install pdm
+RUN pdm install --no-editable --no-self
+ENV PATH="/api/.venv/bin:$PATH"
 
 # Copy __init__ in parent dir to enable relative imports
 COPY /__init__.py /api/__init__.py
@@ -38,4 +41,4 @@ Options = UnsafeLegacyRenegotiation'\
 WORKDIR /api
 
 # Run the FastAPI app
-CMD ["uvicorn", "gptstonks_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--env-file", "gptstonks_api/.env"]
+CMD ["uvicorn", "gptstonks_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
