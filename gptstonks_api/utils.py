@@ -103,3 +103,7 @@ def get_default_classifier_model():
 
 def get_default_llm():
     return "daedalus314/Griffin-3B-GPTQ"
+
+
+def get_keys_file():
+    return "./apikeys_list.json"
