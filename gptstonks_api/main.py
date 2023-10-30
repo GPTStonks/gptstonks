@@ -23,6 +23,7 @@ from .utils import (
     get_func_parameter_names,
     get_griffin_few_shot_template,
     get_griffin_general_template,
+    get_keys_file,
     get_wizardcoder_few_shot_template,
 )
 
@@ -104,6 +105,12 @@ def init_data():
     # For now all models use Griffin template, it should be simple enough
     general_template = get_griffin_general_template()
     app.get_answer = guidance_wrapper(general_template)
+
+    # Load API keys and set them in OpenBB
+    if os.path.exists(get_keys_file()):
+        with open(get_keys_file()) as keys_file:
+            keys_list = json.load(keys_file)
+        openbb.keys.set_keys(keys_dict=keys_list, persist=True, show_output=False)
 
 
 @app.post("/process_query_async")
@@ -232,7 +239,7 @@ async def set_api_keys(request: Request):
     show_output = data.get("show_output") or False
     if keys_list is not None:
         openbb.keys.set_keys(keys_dict=keys_list, persist=persist, show_output=show_output)
-        with open("./apikeys_list.json", "w") as keysFile:
+        with open(get_keys_file(), "w") as keysFile:
             json.dump(keys_list, keysFile)
         return {"status": "Keys set correctly", "keys": keys_list}
     else:
