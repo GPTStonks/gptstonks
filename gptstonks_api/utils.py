@@ -1,5 +1,8 @@
 from typing import List
 
+from langchain.utilities import PythonREPL
+from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
+
 
 def get_func_parameter_names(func_def: str) -> List[str]:
     # E.g. stocks(symbol: str, time: int) would be ["symbol", "time"]
@@ -107,3 +110,18 @@ def get_default_llm():
 
 def get_keys_file():
     return "./apikeys_list.json"
+
+
+def get_openbb_chat_output(query_str: str, auto_llama_index: AutoLlamaIndex) -> str:
+    nodes = auto_llama_index.retrieve(
+        f"Represent this sentence for searching relevant passages: {query_str}"
+    )
+    return auto_llama_index.synth(query_str, nodes)
+
+
+def get_openbb_chat_output_executed(
+    query_str: str, auto_llama_index: AutoLlamaIndex, python_repl_utility: PythonREPL
+) -> str:
+    output_res = get_openbb_chat_output(query_str, auto_llama_index)
+    code_str = output_res.response.split("```python")[1].split("```")[0]
+    return python_repl_utility.run(code_str)
