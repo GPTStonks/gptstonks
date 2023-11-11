@@ -30,8 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install pdm
-          pdm install --no-editable --no-self
-          pdm add pytest
+          pdm install --no-editable --no-self -G testing
 
       - name: Run pytest
         run: .venv/bin/pytest -v
@@ -56,9 +55,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install pdm
-          pdm install --no-editable --no-self
-          pdm add pytest
-          pdm add "pytest-cov[toml]"
+          pdm install --no-editable --no-self -G testing
 
       - name: Run tests and collect coverage
         run: .venv/bin/pytest --cov gptstonks_api

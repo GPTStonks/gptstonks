@@ -7,19 +7,16 @@ RUN apt-get update && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
-# Install requirements with PDM
+# Install requirements with PDM and download index
 COPY ./pyproject.toml /api/pyproject.toml
 COPY ./pdm.lock /api/pdm.lock
 WORKDIR /api
-RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.10.0 && \
-    pdm install --no-editable --no-self
-ENV PATH="/api/.venv/bin:$PATH"
-
-# Download index with gdown
 RUN --mount=type=secret,id=vsi_gdrive_uri \
-    pdm add gdown && \
-    VSI_GDRIVE_URI=$(cat /run/secrets/vsi_gdrive_uri) python -c "import os, gdown; gdown.download_folder(os.getenv('VSI_GDRIVE_URI'))" >/dev/null 2>&1 && \
+    pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.10.0 gdown==4.7.1 && \
+    VSI_GDRIVE_URI=$(cat /run/secrets/vsi_gdrive_uri) python3 -c "import os, gdown; gdown.download_folder(os.getenv('VSI_GDRIVE_URI'))" >/dev/null 2>&1 && \
+    pdm install --no-editable --no-self && \
     pdm cache clear
+ENV PATH="/api/.venv/bin:$PATH"
 
 # Copy __init__ in parent dir to enable relative imports
 COPY ./__init__.py /api/__init__.py

@@ -9,7 +9,8 @@ dependencies = [
     "pre-commit==3.*",
     "pytest==7.*",
     "fastapi==0.*",
-    "openbb-chat>=0.0.7",
+    "openbb==3.2.4",
+    "openbb-chat>=0.0.8",
     "uvicorn>=0.23.2",
     "sentence-transformers>=2.2.2",
     "duckduckgo-search>=3.8.1",
@@ -17,6 +18,18 @@ dependencies = [
 requires-python = ">=3.10,<3.11.*"
 readme = "README.md"
 license = {text = "MIT"}
+
+[project.optional-dependencies]
+testing = [
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.pdm.resolution.overrides]
+# These are incompatible with openbb versions, but it shouldn't be a problem
+llama-index = ">=0.8.67"
+langchain = ">=0.0.334"
+openai = ">=1.1.0"
 
 
 [build-system]

@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional
 
 from langchain.utilities import PythonREPL
+from llama_index.indices.postprocessor.types import BaseNodePostprocessor
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 
 
@@ -112,16 +113,23 @@ def get_keys_file():
     return "./apikeys_list.json"
 
 
-def get_openbb_chat_output(query_str: str, auto_llama_index: AutoLlamaIndex) -> str:
-    nodes = auto_llama_index.retrieve(
-        f"Represent this sentence for searching relevant passages: {query_str}"
-    )
+def get_openbb_chat_output(
+    query_str: str,
+    auto_llama_index: AutoLlamaIndex,
+    node_postprocessor: Optional[BaseNodePostprocessor] = None,
+) -> str:
+    nodes = auto_llama_index.retrieve(query_str)
+    if node_postprocessor is not None:
+        nodes = node_postprocessor.postprocess_nodes(nodes)
     return auto_llama_index.synth(query_str, nodes)
 
 
 def get_openbb_chat_output_executed(
-    query_str: str, auto_llama_index: AutoLlamaIndex, python_repl_utility: PythonREPL
+    query_str: str,
+    auto_llama_index: AutoLlamaIndex,
+    python_repl_utility: PythonREPL,
+    node_postprocessor: Optional[BaseNodePostprocessor] = None,
 ) -> str:
-    output_res = get_openbb_chat_output(query_str, auto_llama_index)
+    output_res = get_openbb_chat_output(query_str, auto_llama_index, node_postprocessor)
     code_str = output_res.response.split("```python")[1].split("```")[0]
     return python_repl_utility.run(code_str)
