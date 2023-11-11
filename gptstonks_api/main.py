@@ -13,7 +13,10 @@ from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.llms import OpenAI
 from langchain.tools import DuckDuckGoSearchRun
 from langchain.utilities import PythonREPL, SerpAPIWrapper
-from llama_index.indices.postprocessor import SimilarityPostprocessor
+from llama_index.indices.postprocessor import (
+    MetadataReplacementPostProcessor,
+    SimilarityPostprocessor,
+)
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_terminal.sdk import openbb
 from rich.progress import track
@@ -99,10 +102,16 @@ def init_data():
     search = DuckDuckGoSearchRun()
     app.python_repl_utility = PythonREPL()
     app.python_repl_utility.globals = globals()
+    app.node_postprocessor = (
+        MetadataReplacementPostProcessor(target_metadata_key="window")
+        if os.getenv("REMOVE_POSTPROCESSOR", None) is None
+        else None
+    )
     partial_get_openbb_chat_output_executed = partial(
         get_openbb_chat_output_executed,
         auto_llama_index=app.auto_llama_index,
         python_repl_utility=app.python_repl_utility,
+        node_postprocessor=app.node_postprocessor,
     )
     app.tools = [
         Tool(
@@ -203,7 +212,9 @@ async def run_model_in_background(job_id: str, query: str, use_agent: bool):
         else:
             # Run programmer
             openbbchat_output = get_openbb_chat_output(
-                query_str=query, auto_llama_index=app.auto_llama_index
+                query_str=query,
+                auto_llama_index=app.auto_llama_index,
+                node_postprocessor=app.node_postprocessor,
             )
             code_str = openbbchat_output.response.split("```python")[1].split("```")[0]
             executed_output_str = app.python_repl_utility.run(code_str)
