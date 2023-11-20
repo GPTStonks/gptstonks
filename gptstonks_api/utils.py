@@ -1,8 +1,14 @@
 from typing import List, Optional
+from urllib.error import HTTPError
 
+import yfinance as yf
+from langchain.llms.base import BaseLLM
+from langchain.prompts import PromptTemplate
+from langchain.tools.base import BaseTool
 from langchain.utilities import PythonREPL
 from llama_index.indices.postprocessor.types import BaseNodePostprocessor
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
+from requests.exceptions import ReadTimeout
 
 
 def get_func_parameter_names(func_def: str) -> List[str]:
@@ -133,3 +139,51 @@ def get_openbb_chat_output_executed(
     output_res = get_openbb_chat_output(query_str, auto_llama_index, node_postprocessor)
     code_str = output_res.response.split("```python")[1].split("```")[0]
     return python_repl_utility.run(code_str)
+
+
+def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool) -> str:
+    tool_output: str = tool.run(tool_input)
+    model_prompt: str = PromptTemplate(
+        input_variables=["context_str", "query_str"],
+        template=(
+            "You are a helpful assistant that answers queries based on a context, using the same language as the query.\n\n"
+            "# CONTEXT\n"
+            "----------------------\n"
+            "{context_str}\n"
+            "----------------------\n\n"
+            "# QUERY\n"
+            "{query_str}\n\n"
+            "# ANSWER\n"
+        ),
+    ).format(query_str=tool_input, context_str=tool_output)
+
+    return llm(model_prompt)
+
+
+def get_custom_gptstonks_prefix() -> str:
+    return (
+        "GPTStonks Chat is a financial chatbot, developed by GPTStonks, that democratizes the access to financial data. "
+        "GPTStonks Chat helps retail and professional investors make informed decisions by providing the following services:\n"
+        "- Realt-time financial data via [OpenBB](https://openbb.co/).\n"
+        "- Current events information via [DuckDuckGo](https://duckduckgo.com/).\n"
+        "- General information via [Wikipedia](https://www.wikipedia.org/).\n"
+        "\n"
+        "GPTStonks Chat does not provide investing advice or opinions. GPTStonks Chat only provides useful data "
+        "to help investors in their own decisions. GPTStonks Chat always answers politely and it declines to answer "
+        "about controversial, harmful, discriminatory or offensive topics.\n"
+        "\n"
+        "TOOLS:\n"
+        "------\n"
+        "\n"
+        "GPTStonks Chat has access to the following tools:"
+    )
+
+
+def yfinance_info_titles(tool_input: str | dict) -> str:
+    company = yf.Ticker(tool_input)
+    try:
+        links = [n["link"] for n in company.news if n["type"] == "STORY"]
+    except (HTTPError, ReadTimeout, ConnectionError):
+        if not links:
+            return f"No news found for company that searched with {tool_input} ticker."
+    return "\n".join([f'- {new["title"]} [link]({new["link"]})' for new in company.news])

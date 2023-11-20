@@ -11,9 +11,7 @@ RUN apt-get update && \
 COPY ./pyproject.toml /api/pyproject.toml
 COPY ./pdm.lock /api/pdm.lock
 WORKDIR /api
-RUN --mount=type=secret,id=vsi_gdrive_uri \
-    pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.10.0 gdown==4.7.1 && \
-    VSI_GDRIVE_URI=$(cat /run/secrets/vsi_gdrive_uri) python3 -c "import os, gdown; gdown.download_folder(os.getenv('VSI_GDRIVE_URI'))" >/dev/null 2>&1 && \
+RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.10.0 && \
     pdm install --no-editable --no-self && \
     pdm cache clear
 ENV PATH="/api/.venv/bin:$PATH"

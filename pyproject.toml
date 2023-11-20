@@ -14,6 +14,10 @@ dependencies = [
     "uvicorn>=0.23.2",
     "sentence-transformers>=2.2.2",
     "duckduckgo-search>=3.8.1",
+    "wikipedia>=1.4.0",
+    "youtube-search>=2.1.2",
+    "yfinance>=0.2.31",
+    "gdown>=4.7.1",
 ]
 requires-python = ">=3.10,<3.11.*"
 readme = "README.md"
@@ -27,9 +31,8 @@ testing = [
 
 [tool.pdm.resolution.overrides]
 # These are incompatible with openbb versions, but it shouldn't be a problem
-llama-index = ">=0.8.67"
-langchain = ">=0.0.334"
-openai = ">=1.1.0"
+llama-index = "0.8.62"
+langchain = ">=0.0.303"
 
 
 [build-system]

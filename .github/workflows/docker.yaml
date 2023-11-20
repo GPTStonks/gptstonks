@@ -121,7 +121,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
 
-      - name: Build and push to ghcr.io
+      - name: Build and push to Docker Hub
         uses: docker/build-push-action@v4
         with:
           context: .
