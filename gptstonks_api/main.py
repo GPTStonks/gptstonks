@@ -5,14 +5,24 @@ import os
 import uuid
 from functools import partial
 
+import gdown
 import pandas as pd
 import torch
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, Tool, initialize_agent
+from langchain.agents.mrkl.output_parser import MRKLOutputParser
 from langchain.llms import OpenAI
-from langchain.tools import DuckDuckGoSearchRun
-from langchain.utilities import PythonREPL, SerpAPIWrapper
+from langchain.memory import ConversationBufferWindowMemory
+from langchain.tools import (
+    DuckDuckGoSearchRun,
+    WikipediaQueryRun,
+    YahooFinanceNewsTool,
+    YouTubeSearchTool,
+)
+from langchain.utilities import PythonREPL, WikipediaAPIWrapper
+from llama_index.embeddings import OpenAIEmbedding
+from llama_index.embeddings.openai import OpenAIEmbeddingModelType
 from llama_index.indices.postprocessor import (
     MetadataReplacementPostProcessor,
     SimilarityPostprocessor,
@@ -23,6 +33,7 @@ from rich.progress import track
 from transformers import BitsAndBytesConfig, GPTQConfig
 
 from .utils import (
+    get_custom_gptstonks_prefix,
     get_default_classifier_model,
     get_default_llm,
     get_definitions_path,
@@ -35,6 +46,8 @@ from .utils import (
     get_openbb_chat_output,
     get_openbb_chat_output_executed,
     get_wizardcoder_few_shot_template,
+    run_qa_over_tool_output,
+    yfinance_info_titles,
 )
 
 description = """
@@ -82,10 +95,19 @@ results_store = {}
 def init_data():
     """Initial function called during the application startup."""
 
+    gdown.download_folder(os.getenv("VSI_GDRIVE_URI"), output=os.getenv("VSI_PATH").split(":")[-1])
+
+    embed_model = os.getenv("EMBEDDING_MODEL_ID", "local:BAAI/bge-large-en-v1.5")
+    if embed_model == "default":
+        embed_model = OpenAIEmbedding(
+            model=OpenAIEmbeddingModelType.TEXT_EMBED_ADA_002,
+            timeout=float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
+        )
+
     # Load AutoLlamaIndex
     app.auto_llama_index = AutoLlamaIndex(
         os.getenv("VSI_PATH"),
-        os.getenv("EMBEDDING_MODEL_ID", "local:BAAI/bge-large-en-v1.5"),
+        embed_model,
         os.getenv("LLM_MODEL_ID", "openai:gpt-3.5-turbo"),
         context_window=os.getenv("LLM_CONTEXT_WINDOW", 4096),
         qa_template_str=os.getenv("QA_TEMPLATE", None),
@@ -96,10 +118,13 @@ def init_data():
         other_llama_index_bm25_retriever_kwargs={
             "similarity_top_k": os.getenv("BMR_SIMILARITY_TOP_K", 3)
         },
+        other_llama_index_llm_kwargs={
+            "timeout": float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
+            "temperature": 0,
+        },
     )
 
     # Create agent
-    search = DuckDuckGoSearchRun()
     app.python_repl_utility = PythonREPL()
     app.python_repl_utility.globals = globals()
     app.node_postprocessor = (
@@ -107,37 +132,67 @@ def init_data():
         if os.getenv("REMOVE_POSTPROCESSOR", None) is None
         else None
     )
-    partial_get_openbb_chat_output_executed = partial(
-        get_openbb_chat_output_executed,
-        auto_llama_index=app.auto_llama_index,
-        python_repl_utility=app.python_repl_utility,
-        node_postprocessor=app.node_postprocessor,
+    search_tool = DuckDuckGoSearchRun()
+    wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
+    yhfinance_tool = YahooFinanceNewsTool()
+    ai_prefix = "AI"
+    llm = OpenAI(
+        model_name=os.getenv("LLM_MODEL_ID", "openai:gpt-3.5-turbo").split(":")[1],
+        temperature=0,
+        request_timeout=float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
+    )
+    memory = ConversationBufferWindowMemory(
+        memory_key="chat_history", k=0, output_key="output", ai_prefix=ai_prefix
     )
     app.tools = [
         Tool(
-            name="Search",
-            func=search.run,
-            description=os.getenv("AGENT_SEARCH_TOOL_DESCRIPTION"),
+            name=search_tool.name,
+            func=partial(
+                run_qa_over_tool_output,
+                llm=llm,
+                tool=search_tool,
+            ),
+            description=search_tool.description,
+            return_direct=True,
         ),
         Tool(
-            name="OpenBBChat",
-            func=partial_get_openbb_chat_output_executed,
+            name="openbb_terminal",
+            func=partial(
+                get_openbb_chat_output_executed,
+                auto_llama_index=app.auto_llama_index,
+                python_repl_utility=app.python_repl_utility,
+                node_postprocessor=app.node_postprocessor,
+            ),
             description=os.getenv("OPENBBCHAT_TOOL_DESCRIPTION"),
             return_direct=True,
         ),
-    ]
-    app.agent = initialize_agent(
-        tools=app.tools,
-        llm=OpenAI(
-            model_name=os.getenv("LLM_MODEL_ID", "openai:gpt-3.5-turbo").split(":")[1],
-            temperature=0,
-            request_timeout=os.getenv("AGENT_REQUEST_TIMEOUT", 20),
+        Tool(
+            name=yhfinance_tool.name,
+            func=yfinance_info_titles,
+            description=yhfinance_tool.description,
+            return_direct=True,
         ),
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        Tool(
+            name=wikipedia_tool.name,
+            func=partial(
+                run_qa_over_tool_output,
+                llm=llm,
+                tool=wikipedia_tool,
+            ),
+            description=wikipedia_tool.description,
+            return_direct=True,
+        ),
+    ]
+    app.agent_executor = initialize_agent(
+        tools=app.tools,
+        llm=llm,
+        memory=memory,
+        agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
         verbose=True,
-        return_intermediate_steps=True,
+        return_intermediate_steps=False,
         max_iterations=2,
         early_stopping_method=os.getenv("AGENT_EARLY_STOPPING_METHOD", "generate"),
+        agent_kwargs={"ai_prefix": ai_prefix, "prefix": get_custom_gptstonks_prefix()},
     )
 
     # Load API keys and set them in OpenBB
@@ -186,8 +241,7 @@ async def run_model_in_background(job_id: str, query: str, use_agent: bool):
     try:
         if use_agent:
             # Run agent
-            agent_output = app.agent({"input": query})
-            print(f"{agent_output=}")
+            agent_output = app.agent_executor({"input": query})
             agent_output_str = agent_output["output"]
 
             try:
@@ -195,19 +249,12 @@ async def run_model_in_background(job_id: str, query: str, use_agent: bool):
                 results_store[job_id] = {
                     "type": "data",
                     "result_data": res,
-                    "body": [
-                        [f"Observation {idx}: {step[1]}"]
-                        for idx, step in enumerate(agent_output["intermediate_steps"])
-                    ],
+                    "body": "> Data returned using `openbb`. Use with caution.",
                 }
             except Exception as e:
                 results_store[job_id] = {
                     "type": "data",
-                    "body": [
-                        f"Observation {idx}: {step[1]}"
-                        for idx, step in enumerate(agent_output["intermediate_steps"])
-                    ]
-                    + [f"Final answer: {agent_output_str}"],
+                    "body": agent_output_str,
                 }
         else:
             # Run programmer
