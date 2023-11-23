@@ -1,54 +1,36 @@
-import ast
 import asyncio
 import json
 import os
 import uuid
 from functools import partial
+from typing import Optional
 
 import gdown
-import pandas as pd
-import torch
-from fastapi import FastAPI, Request
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.agents.mrkl.output_parser import MRKLOutputParser
 from langchain.llms import OpenAI
 from langchain.memory import ConversationBufferWindowMemory
-from langchain.tools import (
-    DuckDuckGoSearchRun,
-    WikipediaQueryRun,
-    YahooFinanceNewsTool,
-    YouTubeSearchTool,
-)
+from langchain.tools import DuckDuckGoSearchRun, WikipediaQueryRun, YahooFinanceNewsTool
 from langchain.utilities import PythonREPL, WikipediaAPIWrapper
 from llama_index.embeddings import OpenAIEmbedding
 from llama_index.embeddings.openai import OpenAIEmbeddingModelType
-from llama_index.indices.postprocessor import (
-    MetadataReplacementPostProcessor,
-    SimilarityPostprocessor,
-)
+from llama_index.indices.postprocessor import MetadataReplacementPostProcessor
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_terminal.sdk import openbb
-from rich.progress import track
-from transformers import BitsAndBytesConfig, GPTQConfig
 
 from .utils import (
     get_custom_gptstonks_prefix,
-    get_default_classifier_model,
-    get_default_llm,
-    get_definitions_path,
-    get_definitions_sep,
-    get_embeddings_path,
-    get_func_parameter_names,
-    get_griffin_few_shot_template,
-    get_griffin_general_template,
     get_keys_file,
     get_openbb_chat_output,
     get_openbb_chat_output_executed,
-    get_wizardcoder_few_shot_template,
     run_qa_over_tool_output,
     yfinance_info_titles,
 )
+
+load_dotenv()
 
 description = """
 GPTStonks API allows interacting with [OpenBB](https://openbb.co/) using natural language.
