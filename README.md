@@ -5,7 +5,7 @@
   <!-- Hugging Face Badge -->
   <a href="https://huggingface.co/"><img src="https://img.shields.io/badge/Hugging%20Face-F58025?style=for-the-badge&logo=huggingface&logoColor=white" alt="Hugging Face Badge"></a>
   <!-- LangChain Badge -->
-  <a href="https://langchain.ai/">
+  <a href="https://langchain.com/">
     <img src="https://img.shields.io/badge/LangChain-005A9C?style=for-the-badge&logo=langchain&logoColor=white" alt="LangChain Badge">
   </a>
   <!-- FastAPI Badge -->
@@ -17,7 +17,7 @@
     <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Badge">
   </a>
   <!-- OpenBB Badge -->
-  <a href="https://openbb.ai/">
+  <a href="https://openbb.co/">
     <img src="https://img.shields.io/badge/OpenBB-FFA500?style=for-the-badge&logo=openbb&logoColor=white" alt="OpenBB Badge">
   </a>
 </p>
@@ -113,7 +113,13 @@ docker run -it -p 8000:8000 --env-file .env ghcr.io/gptstonks/api:main
   > openssl.cnf
   ```
 
-  5. Start the API:
+  5. Load the environment variables:
+
+  ```bash
+  source .env
+  ```
+
+  6. Start the API:
 
   ```bash
   uvicorn gptstonks_api.main:app --host 0.0.0.0 --port 8000

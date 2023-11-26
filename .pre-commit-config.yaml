@@ -122,3 +122,9 @@ repos:
             "--extend-ignore=E203,E402,E501,F401,F841",
             "--exclude=logs/*,data/*",
           ]
+
+  - repo: https://github.com/zricethezav/gitleaks
+    rev: v8.18.1
+    hooks:
+      - id: gitleaks
+        args: ["--verbose", "--redact"]
