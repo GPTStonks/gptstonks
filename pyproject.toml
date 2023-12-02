@@ -7,7 +7,6 @@ authors = [
 ]
 dependencies = [
     "pre-commit==3.*",
-    "pytest==7.*",
     "fastapi==0.*",
     "openbb==3.2.4",
     "openbb-chat>=0.0.8",

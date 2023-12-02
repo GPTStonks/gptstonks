@@ -119,24 +119,24 @@ def get_keys_file():
     return "./apikeys_list.json"
 
 
-def get_openbb_chat_output(
+async def get_openbb_chat_output(
     query_str: str,
     auto_llama_index: AutoLlamaIndex,
     node_postprocessor: Optional[BaseNodePostprocessor] = None,
 ) -> str:
-    nodes = auto_llama_index.retrieve(query_str)
+    nodes = await auto_llama_index._retriever.aretrieve(query_str)
     if node_postprocessor is not None:
         nodes = node_postprocessor.postprocess_nodes(nodes)
-    return auto_llama_index.synth(query_str, nodes)
+    return await auto_llama_index._query_engine.asynthesize(query_bundle=query_str, nodes=nodes)
 
 
-def get_openbb_chat_output_executed(
+async def get_openbb_chat_output_executed(
     query_str: str,
     auto_llama_index: AutoLlamaIndex,
     python_repl_utility: PythonREPL,
     node_postprocessor: Optional[BaseNodePostprocessor] = None,
 ) -> str:
-    output_res = get_openbb_chat_output(query_str, auto_llama_index, node_postprocessor)
+    output_res = await get_openbb_chat_output(query_str, auto_llama_index, node_postprocessor)
     code_str = output_res.response.split("```python")[1].split("```")[0]
     return python_repl_utility.run(code_str)
 
@@ -158,6 +158,25 @@ def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool
     ).format(query_str=tool_input, context_str=tool_output)
 
     return llm(model_prompt)
+
+
+async def arun_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool) -> str:
+    tool_output: str = await tool.arun(tool_input)
+    model_prompt: str = PromptTemplate(
+        input_variables=["context_str", "query_str"],
+        template=(
+            "You are a helpful assistant that answers queries based on a context, using the same language as the query.\n\n"
+            "# CONTEXT\n"
+            "----------------------\n"
+            "{context_str}\n"
+            "----------------------\n\n"
+            "# QUERY\n"
+            "{query_str}\n\n"
+            "# ANSWER\n"
+        ),
+    ).format(query_str=tool_input, context_str=tool_output)
+
+    return await llm.apredict(model_prompt)
 
 
 def get_custom_gptstonks_prefix() -> str:

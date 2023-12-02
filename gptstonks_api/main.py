@@ -22,11 +22,11 @@ from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_terminal.sdk import openbb
 
 from .utils import (
+    arun_qa_over_tool_output,
     get_custom_gptstonks_prefix,
     get_keys_file,
     get_openbb_chat_output,
     get_openbb_chat_output_executed,
-    run_qa_over_tool_output,
     yfinance_info_titles,
 )
 
@@ -107,6 +107,7 @@ def init_data():
     )
 
     # Create agent
+    ai_prefix = "AI"
     app.python_repl_utility = PythonREPL()
     app.python_repl_utility.globals = globals()
     app.node_postprocessor = (
@@ -117,7 +118,6 @@ def init_data():
     search_tool = DuckDuckGoSearchRun()
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
     yhfinance_tool = YahooFinanceNewsTool()
-    ai_prefix = "AI"
     llm = OpenAI(
         model_name=os.getenv("LLM_MODEL_ID", "openai:gpt-3.5-turbo").split(":")[1],
         temperature=0,
@@ -129,8 +129,9 @@ def init_data():
     app.tools = [
         Tool(
             name=search_tool.name,
-            func=partial(
-                run_qa_over_tool_output,
+            func=None,
+            coroutine=partial(
+                arun_qa_over_tool_output,
                 llm=llm,
                 tool=search_tool,
             ),
@@ -139,7 +140,8 @@ def init_data():
         ),
         Tool(
             name="openbb_terminal",
-            func=partial(
+            func=None,
+            coroutine=partial(
                 get_openbb_chat_output_executed,
                 auto_llama_index=app.auto_llama_index,
                 python_repl_utility=app.python_repl_utility,
@@ -156,8 +158,9 @@ def init_data():
         ),
         Tool(
             name=wikipedia_tool.name,
-            func=partial(
-                run_qa_over_tool_output,
+            func=None,
+            coroutine=partial(
+                arun_qa_over_tool_output,
                 llm=llm,
                 tool=wikipedia_tool,
             ),
@@ -199,15 +202,10 @@ async def process_query_async(request: Request):
     query = data.get("query")
     use_agent = data.get("use_agent", False)
 
-    job_id = str(uuid.uuid4())
-    response = {"message": "Processing started", "job_id": job_id}
-
-    asyncio.create_task(run_model_in_background(job_id, query, use_agent))
-
-    return response
+    return await run_model_in_background(query, use_agent)
 
 
-async def run_model_in_background(job_id: str, query: str, use_agent: bool):
+async def run_model_in_background(query: str, use_agent: bool) -> dict:
     """Background task to process the query using the STransformer and OpenBB. Stores the result in
     the global results_store dictionary.
 
@@ -217,30 +215,29 @@ async def run_model_in_background(job_id: str, query: str, use_agent: bool):
         use_agent (bool): Whether to run in Agent mode or Programmer mode.
 
     Returns:
-        None
+        dict: Response to the query.
     """
 
     try:
         if use_agent:
             # Run agent
-            agent_output = app.agent_executor({"input": query})
-            agent_output_str = agent_output["output"]
+            agent_output_str = await app.agent_executor.arun(query)
 
             try:
                 res = json.loads(agent_output_str)
-                results_store[job_id] = {
+                return {
                     "type": "data",
                     "result_data": res,
                     "body": "> Data returned using `openbb`. Use with caution.",
                 }
             except Exception as e:
-                results_store[job_id] = {
+                return {
                     "type": "data",
                     "body": agent_output_str,
                 }
         else:
             # Run programmer
-            openbbchat_output = get_openbb_chat_output(
+            openbbchat_output = await get_openbb_chat_output(
                 query_str=query,
                 auto_llama_index=app.auto_llama_index,
                 node_postprocessor=app.node_postprocessor,
@@ -249,41 +246,22 @@ async def run_model_in_background(job_id: str, query: str, use_agent: bool):
             executed_output_str = app.python_repl_utility.run(code_str)
             try:
                 res = json.loads(executed_output_str)
-                results_store[job_id] = {
+                return {
                     "type": "data",
                     "result_data": res,
                     "body": openbbchat_output.response,
                 }
             except Exception as e:
-                results_store[job_id] = {
+                return {
                     "type": "data",
                     "body": f"{openbbchat_output.response}\n\nResult: {executed_output_str}",
                 }
     except Exception as e:
         print(e)
-        results_store[job_id] = {
+        return {
             "type": "error",
             "body": "Error processing the query. Please try again!",
         }
-    finally:
-        return
-
-
-@app.get("/get_processing_result/{job_id}")
-async def get_processing_result(job_id: str):
-    """Endpoint to fetch the processing result using a job ID.
-
-    Args:
-        job_id (str): Unique identifier for the job.
-
-    Returns:
-        dict: Contains either the status of processing or the final result once completed.
-    """
-    result = results_store.get(job_id)
-    if result is None:
-        return {"status": "processing"}
-    else:
-        return {"status": "completed", "result": result}
 
 
 @app.get("/get_api_keys")
