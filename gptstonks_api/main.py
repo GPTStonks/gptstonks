@@ -1,43 +1,38 @@
-import asyncio
 import json
 import os
-import uuid
 from functools import partial
-from typing import Optional
 
 import gdown
-from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request
+import openai
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, Tool, initialize_agent
-from langchain.agents.mrkl.output_parser import MRKLOutputParser
-from langchain.llms import OpenAI
+from langchain.globals import set_debug
+from langchain.llms import Bedrock, OpenAI, VertexAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.tools import DuckDuckGoSearchRun, WikipediaQueryRun, YahooFinanceNewsTool
 from langchain.utilities import PythonREPL, WikipediaAPIWrapper
 from llama_index.embeddings import OpenAIEmbedding
 from llama_index.embeddings.openai import OpenAIEmbeddingModelType
-from llama_index.indices.postprocessor import MetadataReplacementPostProcessor
+from llama_index.llms import LangChainLLM
+from llama_index.postprocessor import MetadataReplacementPostProcessor
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_terminal.sdk import openbb
 
 from .utils import (
     arun_qa_over_tool_output,
-    get_custom_gptstonks_prefix,
     get_keys_file,
     get_openbb_chat_output,
     get_openbb_chat_output_executed,
     yfinance_info_titles,
 )
 
-load_dotenv()
-
 description = """
 GPTStonks API allows interacting with [OpenBB](https://openbb.co/) using natural language.
 
 # Features
 The API supports the following features:
-- OpenAI LLMs.
+- Bedrock LLMs.
 - Multiple text embedding models on Hugging Face.
 - Asynchronous processing.
 
@@ -70,14 +65,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-results_store = {}
-
 
 @app.on_event("startup")
 def init_data():
     """Initial function called during the application startup."""
 
-    gdown.download_folder(os.getenv("VSI_GDRIVE_URI"), output=os.getenv("VSI_PATH").split(":")[-1])
+    if os.getenv("DEBUG_API") is not None:
+        set_debug(True)
+
+    vsi_path = os.getenv("VSI_PATH").split(":")[-1]
+    if not os.path.exists(vsi_path):
+        gdown.download_folder(os.getenv("VSI_GDRIVE_URI"), output=vsi_path)
+    else:
+        print(f"{vsi_path} already exists, assuming it was already downloaded")
 
     embed_model = os.getenv("EMBEDDING_MODEL_ID", "local:BAAI/bge-large-en-v1.5")
     if embed_model == "default":
@@ -86,28 +86,56 @@ def init_data():
             timeout=float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
         )
 
+    # Create LLM for both langchain agent and llama-index
+    # In the future this logic could be moved to openbb-chat
+    model_provider, llm_model_name = os.getenv(
+        "LLM_MODEL_ID", "bedrock:anthropic.claude-instant-v1"
+    ).split(":")
+    llm_common_kwargs = {
+        "model_name": llm_model_name,
+        "temperature": float(os.getenv("LLM_TEMPERATURE", 0.1)),
+        "request_timeout": float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
+        "max_tokens": int(os.getenv("LLM_MAX_TOKENS", 256)),
+    }
+    if model_provider == "openai":
+        raise NotImplementedError(
+            "OpenAI async API not working with latest llama-index and langchain"
+        )
+    elif model_provider == "anyscale":
+        raise NotImplementedError("Anyscale does not support yet async API in langchain")
+    elif model_provider == "bedrock":
+        llm = Bedrock(
+            credentials_profile_name=None,
+            model_id=llm_model_name,
+            model_kwargs={
+                "temperature": llm_common_kwargs["temperature"],
+                "top_p": float(os.getenv("LLM_TOP_P", 0.9)),
+                "max_tokens_to_sample": llm_common_kwargs["max_tokens"],
+            },
+        )
+    elif model_provider == "vertexai":
+        llm_common_kwargs["max_output_tokens"] = llm_common_kwargs["max_tokens"]
+        del llm_common_kwargs["max_tokens"]
+        llm = VertexAI(location=os.getenv("LLM_CLOUD_LOCATION"), **llm_common_kwargs)
+    else:
+        raise NotImplementedError(f"Provider {model_provider} not implemented")
+    llamaindex_llm = LangChainLLM(llm=llm)
+
     # Load AutoLlamaIndex
     app.auto_llama_index = AutoLlamaIndex(
-        os.getenv("VSI_PATH"),
-        embed_model,
-        os.getenv("LLM_MODEL_ID", "openai:gpt-3.5-turbo"),
-        context_window=os.getenv("LLM_CONTEXT_WINDOW", 4096),
+        path=os.getenv("VSI_PATH"),
+        embedding_model_id=embed_model,
+        llm_model=llamaindex_llm,
+        context_window=int(os.getenv("LLM_CONTEXT_WINDOW", 4096)),
         qa_template_str=os.getenv("QA_TEMPLATE", None),
         refine_template_str=os.getenv("REFINE_TEMPLATE", None),
         other_llama_index_vector_index_retriever_kwargs={
-            "similarity_top_k": os.getenv("VIR_SIMILARITY_TOP_K", 3)
-        },
-        other_llama_index_bm25_retriever_kwargs={
-            "similarity_top_k": os.getenv("BMR_SIMILARITY_TOP_K", 3)
-        },
-        other_llama_index_llm_kwargs={
-            "timeout": float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
-            "temperature": 0,
+            "similarity_top_k": int(os.getenv("VIR_SIMILARITY_TOP_K", 3))
         },
     )
 
     # Create agent
-    ai_prefix = "AI"
+    AI_PREFIX = "GPTSTONKS_RESPONSE"
     app.python_repl_utility = PythonREPL()
     app.python_repl_utility.globals = globals()
     app.node_postprocessor = (
@@ -118,13 +146,8 @@ def init_data():
     search_tool = DuckDuckGoSearchRun()
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
     yhfinance_tool = YahooFinanceNewsTool()
-    llm = OpenAI(
-        model_name=os.getenv("LLM_MODEL_ID", "openai:gpt-3.5-turbo").split(":")[1],
-        temperature=0,
-        request_timeout=float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
-    )
     memory = ConversationBufferWindowMemory(
-        memory_key="chat_history", k=0, output_key="output", ai_prefix=ai_prefix
+        memory_key="chat_history", k=0, output_key="output", ai_prefix=AI_PREFIX
     )
     app.tools = [
         Tool(
@@ -177,7 +200,7 @@ def init_data():
         return_intermediate_steps=False,
         max_iterations=2,
         early_stopping_method=os.getenv("AGENT_EARLY_STOPPING_METHOD", "generate"),
-        agent_kwargs={"ai_prefix": ai_prefix, "prefix": get_custom_gptstonks_prefix()},
+        agent_kwargs={"ai_prefix": AI_PREFIX, "prefix": os.getenv("CUSTOM_GPTSTONKS_PREFIX")},
     )
 
     # Load API keys and set them in OpenBB
@@ -190,13 +213,13 @@ def init_data():
 @app.post("/process_query_async")
 async def process_query_async(request: Request):
     """Asynchronous endpoint to start processing the given query. The processing runs in the
-    background, and a unique job ID is returned for fetching the result.
+    background and the result is eventually returned.
 
     Args:
         request (Request): FastAPI request object containing the query to be processed.
 
     Returns:
-        dict: Contains a message confirming the start of processing and a unique job ID.
+        dict: containing the response.
     """
     data = await request.json()
     query = data.get("query")
@@ -206,8 +229,7 @@ async def process_query_async(request: Request):
 
 
 async def run_model_in_background(query: str, use_agent: bool) -> dict:
-    """Background task to process the query using the STransformer and OpenBB. Stores the result in
-    the global results_store dictionary.
+    """Background task to process the query using the `langchain` agent.
 
     Args:
         job_id (str): Unique identifier for the job.
@@ -220,7 +242,7 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
 
     try:
         if use_agent:
-            # Run agent
+            # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
             agent_output_str = await app.agent_executor.arun(query)
 
             try:
@@ -236,7 +258,7 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
                     "body": agent_output_str,
                 }
         else:
-            # Run programmer
+            # Run programmer. Useful with LLMs of less quality (e.g., smaller open source LLMs)
             openbbchat_output = await get_openbb_chat_output(
                 query_str=query,
                 auto_llama_index=app.auto_llama_index,
@@ -258,10 +280,7 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
                 }
     except Exception as e:
         print(e)
-        return {
-            "type": "error",
-            "body": "Error processing the query. Please try again!",
-        }
+        return {"type": "error", "body": "Sorry, something went wrong!"}
 
 
 @app.get("/get_api_keys")

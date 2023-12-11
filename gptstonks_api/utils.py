@@ -6,7 +6,7 @@ from langchain.llms.base import BaseLLM
 from langchain.prompts import PromptTemplate
 from langchain.tools.base import BaseTool
 from langchain.utilities import PythonREPL
-from llama_index.indices.postprocessor.types import BaseNodePostprocessor
+from llama_index.postprocessor.types import BaseNodePostprocessor
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from requests.exceptions import ReadTimeout
 
@@ -130,6 +130,14 @@ async def get_openbb_chat_output(
     return await auto_llama_index._query_engine.asynthesize(query_bundle=query_str, nodes=nodes)
 
 
+def fix_frequent_code_errors(prev_code: str) -> str:
+    if "pd." in prev_code and "import pandas as pd" not in prev_code:
+        prev_code = f"import pandas as pd\n{prev_code}"
+    if "openbb." in prev_code and "from openbb_terminal.sdk import openbb" not in prev_code:
+        prev_code = f"from openbb_terminal.sdk import openbb\n{prev_code}"
+    return prev_code
+
+
 async def get_openbb_chat_output_executed(
     query_str: str,
     auto_llama_index: AutoLlamaIndex,
@@ -137,8 +145,12 @@ async def get_openbb_chat_output_executed(
     node_postprocessor: Optional[BaseNodePostprocessor] = None,
 ) -> str:
     output_res = await get_openbb_chat_output(query_str, auto_llama_index, node_postprocessor)
-    code_str = output_res.response.split("```python")[1].split("```")[0]
-    return python_repl_utility.run(code_str)
+    code_str = (
+        output_res.response.split("```python")[1].split("```")[0]
+        if "```python" in output_res.response
+        else output_res.response
+    )
+    return python_repl_utility.run(fix_frequent_code_errors(code_str))
 
 
 def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool) -> str:
@@ -177,25 +189,6 @@ async def arun_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: B
     ).format(query_str=tool_input, context_str=tool_output)
 
     return await llm.apredict(model_prompt)
-
-
-def get_custom_gptstonks_prefix() -> str:
-    return (
-        "GPTStonks Chat is a financial chatbot, developed by GPTStonks, that democratizes the access to financial data. "
-        "GPTStonks Chat helps retail and professional investors make informed decisions by providing the following services:\n"
-        "- Realt-time financial data via [OpenBB](https://openbb.co/).\n"
-        "- Current events information via [DuckDuckGo](https://duckduckgo.com/).\n"
-        "- General information via [Wikipedia](https://www.wikipedia.org/).\n"
-        "\n"
-        "GPTStonks Chat does not provide investing advice or opinions. GPTStonks Chat only provides useful data "
-        "to help investors in their own decisions. GPTStonks Chat always answers politely and it declines to answer "
-        "about controversial, harmful, discriminatory or offensive topics.\n"
-        "\n"
-        "TOOLS:\n"
-        "------\n"
-        "\n"
-        "GPTStonks Chat has access to the following tools:"
-    )
 
 
 def yfinance_info_titles(tool_input: str | dict) -> str:
