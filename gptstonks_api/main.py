@@ -4,6 +4,7 @@ from functools import partial
 
 import gdown
 import openai
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, Tool, initialize_agent
@@ -11,21 +12,28 @@ from langchain.globals import set_debug
 from langchain.llms import Bedrock, OpenAI, VertexAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.tools import DuckDuckGoSearchRun, WikipediaQueryRun, YahooFinanceNewsTool
-from langchain.utilities import PythonREPL, WikipediaAPIWrapper
+from langchain.utilities import (
+    DuckDuckGoSearchAPIWrapper,
+    PythonREPL,
+    WikipediaAPIWrapper,
+)
 from llama_index.embeddings import OpenAIEmbedding
 from llama_index.embeddings.openai import OpenAIEmbeddingModelType
 from llama_index.llms import LangChainLLM
 from llama_index.postprocessor import MetadataReplacementPostProcessor
+from openbb import obb
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
-from openbb_terminal.sdk import openbb
 
 from .utils import (
     arun_qa_over_tool_output,
+    fix_frequent_code_errors,
     get_keys_file,
     get_openbb_chat_output,
     get_openbb_chat_output_executed,
     yfinance_info_titles,
 )
+
+load_dotenv()
 
 description = """
 GPTStonks API allows interacting with [OpenBB](https://openbb.co/) using natural language.
@@ -33,7 +41,7 @@ GPTStonks API allows interacting with [OpenBB](https://openbb.co/) using natural
 # Features
 The API supports the following features:
 - Bedrock LLMs.
-- Multiple text embedding models on Hugging Face.
+- Multiple text embedding models on Hugging Face and OpenAI Ada 2 embeddings.
 - Asynchronous processing.
 
 # API Operating Modes
@@ -104,9 +112,9 @@ def init_data():
     elif model_provider == "anyscale":
         raise NotImplementedError("Anyscale does not support yet async API in langchain")
     elif model_provider == "bedrock":
-        llm = Bedrock(
+        app.llm = Bedrock(
             credentials_profile_name=None,
-            model_id=llm_model_name,
+            model_id=llm_common_kwargs["model_name"],
             model_kwargs={
                 "temperature": llm_common_kwargs["temperature"],
                 "top_p": float(os.getenv("LLM_TOP_P", 0.9)),
@@ -116,10 +124,10 @@ def init_data():
     elif model_provider == "vertexai":
         llm_common_kwargs["max_output_tokens"] = llm_common_kwargs["max_tokens"]
         del llm_common_kwargs["max_tokens"]
-        llm = VertexAI(location=os.getenv("LLM_CLOUD_LOCATION"), **llm_common_kwargs)
+        app.llm = VertexAI(location=os.getenv("LLM_CLOUD_LOCATION"), **llm_common_kwargs)
     else:
         raise NotImplementedError(f"Provider {model_provider} not implemented")
-    llamaindex_llm = LangChainLLM(llm=llm)
+    llamaindex_llm = LangChainLLM(llm=app.llm)
 
     # Load AutoLlamaIndex
     app.auto_llama_index = AutoLlamaIndex(
@@ -135,19 +143,19 @@ def init_data():
     )
 
     # Create agent
-    AI_PREFIX = "GPTSTONKS_RESPONSE"
+    app.AI_PREFIX = "GPTSTONKS_RESPONSE"
     app.python_repl_utility = PythonREPL()
     app.python_repl_utility.globals = globals()
     app.node_postprocessor = (
-        MetadataReplacementPostProcessor(target_metadata_key="window")
+        MetadataReplacementPostProcessor(target_metadata_key="extra_context")
         if os.getenv("REMOVE_POSTPROCESSOR", None) is None
         else None
     )
-    search_tool = DuckDuckGoSearchRun()
+    search_tool = DuckDuckGoSearchRun(api_wrapper=DuckDuckGoSearchAPIWrapper())
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
     yhfinance_tool = YahooFinanceNewsTool()
-    memory = ConversationBufferWindowMemory(
-        memory_key="chat_history", k=0, output_key="output", ai_prefix=AI_PREFIX
+    app.memory = ConversationBufferWindowMemory(
+        memory_key="chat_history", k=0, output_key="output", ai_prefix=app.AI_PREFIX
     )
     app.tools = [
         Tool(
@@ -155,10 +163,27 @@ def init_data():
             func=None,
             coroutine=partial(
                 arun_qa_over_tool_output,
-                llm=llm,
+                llm=app.llm,
                 tool=search_tool,
             ),
             description=search_tool.description,
+            return_direct=True,
+        ),
+        Tool(
+            name=yhfinance_tool.name,
+            func=yfinance_info_titles,
+            description=yhfinance_tool.description,
+            return_direct=True,
+        ),
+        Tool(
+            name=wikipedia_tool.name,
+            func=None,
+            coroutine=partial(
+                arun_qa_over_tool_output,
+                llm=app.llm,
+                tool=wikipedia_tool,
+            ),
+            description=wikipedia_tool.description,
             return_direct=True,
         ),
         Tool(
@@ -173,41 +198,7 @@ def init_data():
             description=os.getenv("OPENBBCHAT_TOOL_DESCRIPTION"),
             return_direct=True,
         ),
-        Tool(
-            name=yhfinance_tool.name,
-            func=yfinance_info_titles,
-            description=yhfinance_tool.description,
-            return_direct=True,
-        ),
-        Tool(
-            name=wikipedia_tool.name,
-            func=None,
-            coroutine=partial(
-                arun_qa_over_tool_output,
-                llm=llm,
-                tool=wikipedia_tool,
-            ),
-            description=wikipedia_tool.description,
-            return_direct=True,
-        ),
     ]
-    app.agent_executor = initialize_agent(
-        tools=app.tools,
-        llm=llm,
-        memory=memory,
-        agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
-        verbose=True,
-        return_intermediate_steps=False,
-        max_iterations=2,
-        early_stopping_method=os.getenv("AGENT_EARLY_STOPPING_METHOD", "generate"),
-        agent_kwargs={"ai_prefix": AI_PREFIX, "prefix": os.getenv("CUSTOM_GPTSTONKS_PREFIX")},
-    )
-
-    # Load API keys and set them in OpenBB
-    if os.path.exists(get_keys_file()):
-        with open(get_keys_file()) as keys_file:
-            keys_list = json.load(keys_file)
-        openbb.keys.set_keys(keys_dict=keys_list, persist=True, show_output=False)
 
 
 @app.post("/process_query_async")
@@ -224,17 +215,19 @@ async def process_query_async(request: Request):
     data = await request.json()
     query = data.get("query")
     use_agent = data.get("use_agent", False)
+    openbb_pat = data.get("openbb_pat")
 
-    return await run_model_in_background(query, use_agent)
+    return await run_model_in_background(query, use_agent, openbb_pat)
 
 
-async def run_model_in_background(query: str, use_agent: bool) -> dict:
+async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str | None) -> dict:
     """Background task to process the query using the `langchain` agent.
 
     Args:
         job_id (str): Unique identifier for the job.
         query (str): User query to process.
         use_agent (bool): Whether to run in Agent mode or Programmer mode.
+        openbb_pat (str): OpenBB PAT to use with `openbb_terminal` tool.
 
     Returns:
         dict: Response to the query.
@@ -242,8 +235,24 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
 
     try:
         if use_agent:
+            # update openbb tool with PAT (None if not provided)
+            app.tools[-1].coroutine = partial(app.tools[-1].coroutine, openbb_pat=openbb_pat)
+            agent_executor = initialize_agent(
+                tools=app.tools,
+                llm=app.llm,
+                memory=app.memory,
+                agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+                verbose=True,
+                return_intermediate_steps=False,
+                max_iterations=2,
+                early_stopping_method=os.getenv("AGENT_EARLY_STOPPING_METHOD", "generate"),
+                agent_kwargs={
+                    "ai_prefix": app.AI_PREFIX,
+                    "prefix": os.getenv("CUSTOM_GPTSTONKS_PREFIX"),
+                },
+            )
             # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
-            agent_output_str = await app.agent_executor.arun(query)
+            agent_output_str = await agent_executor.arun(query)
 
             try:
                 res = json.loads(agent_output_str)
@@ -264,8 +273,15 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
                 auto_llama_index=app.auto_llama_index,
                 node_postprocessor=app.node_postprocessor,
             )
-            code_str = openbbchat_output.response.split("```python")[1].split("```")[0]
-            executed_output_str = app.python_repl_utility.run(code_str)
+            code_str = (
+                openbbchat_output.response.split("```python")[1].split("```")[0]
+                if "```python" in openbbchat_output.response
+                else openbbchat_output.response
+            )
+            executed_output_str = app.python_repl_utility.run(
+                fix_frequent_code_errors(code_str, openbb_pat)
+            )
+
             try:
                 res = json.loads(executed_output_str)
                 return {
@@ -285,39 +301,9 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
 
 @app.get("/get_api_keys")
 async def get_api_keys():
-    """Endpoint to retrieve the current API keys information.
-
-    Args:
-        None
-
-    Returns:
-        dict: Contains information about the current API keys.
-    """
-
-    keys = openbb.keys.get_keys_info()
-    return {"result": keys}
+    raise NotImplementedError("Keys are not stored, they are accessed using the PAT on-the-fly")
 
 
 @app.post("/set_api_keys")
 async def set_api_keys(request: Request):
-    """Endpoint to set new API keys. The new keys are set in the OpenBB SDK and also stored in a
-    JSON file.
-
-    Args:
-        request (Request): FastAPI request object containing the keys to set.
-
-    Returns:
-        dict: Status message confirming if keys were set correctly or not.
-    """
-
-    data = await request.json()
-    keys_list = data.get("keys_dict")
-    persist = data.get("persist") or True
-    show_output = data.get("show_output") or False
-    if keys_list is not None:
-        openbb.keys.set_keys(keys_dict=keys_list, persist=persist, show_output=show_output)
-        with open(get_keys_file(), "w") as keysFile:
-            json.dump(keys_list, keysFile)
-        return {"status": "Keys set correctly", "keys": keys_list}
-    else:
-        return {"status": "Key Format was not valid. API Key list not uploaded"}
+    raise NotImplementedError("Keys are not stored, they are accessed using the PAT on-the-fly")

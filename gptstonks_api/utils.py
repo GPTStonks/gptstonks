@@ -130,11 +130,20 @@ async def get_openbb_chat_output(
     return await auto_llama_index._query_engine.asynthesize(query_bundle=query_str, nodes=nodes)
 
 
-def fix_frequent_code_errors(prev_code: str) -> str:
-    if "pd." in prev_code and "import pandas as pd" not in prev_code:
+def fix_frequent_code_errors(prev_code: str, openbb_pat: Optional[str] = None) -> str:
+    if "import pandas as pd" not in prev_code:
         prev_code = f"import pandas as pd\n{prev_code}"
-    if "openbb." in prev_code and "from openbb_terminal.sdk import openbb" not in prev_code:
-        prev_code = f"from openbb_terminal.sdk import openbb\n{prev_code}"
+    if "obb." in prev_code and "from openbb import obb" not in prev_code:
+        prev_code = f"from openbb import obb\n{prev_code}"
+    # login to openbb hub from inside the REPL if a PAT is provided
+    if openbb_pat is not None:
+        prev_code = prev_code.replace(
+            "from openbb import obb\n",
+            f"from openbb import obb\nobb.account.login(pat='{openbb_pat}')\n",
+            1,
+        )
+    # convert generic openbb output to JSON
+    prev_code = f'{prev_code}\nprint(pd.DataFrame.from_records([dict(r) for r in res.results]).to_json(orient="records"))'
     return prev_code
 
 
@@ -143,6 +152,7 @@ async def get_openbb_chat_output_executed(
     auto_llama_index: AutoLlamaIndex,
     python_repl_utility: PythonREPL,
     node_postprocessor: Optional[BaseNodePostprocessor] = None,
+    openbb_pat: Optional[str] = None,
 ) -> str:
     output_res = await get_openbb_chat_output(query_str, auto_llama_index, node_postprocessor)
     code_str = (
@@ -150,7 +160,7 @@ async def get_openbb_chat_output_executed(
         if "```python" in output_res.response
         else output_res.response
     )
-    return python_repl_utility.run(fix_frequent_code_errors(code_str))
+    return python_repl_utility.run(fix_frequent_code_errors(code_str, openbb_pat))
 
 
 def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool) -> str:

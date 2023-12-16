@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.10.0 && \
     pdm cache clear
 ENV PATH="/api/.venv/bin:$PATH"
 
+# Build openbb. See https://docs.openbb.co/platform/installation#post-installation
+RUN python -c "import openbb; openbb.build()"
+
 # Copy __init__ in parent dir to enable relative imports
 COPY ./__init__.py /api/__init__.py
 
