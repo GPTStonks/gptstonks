@@ -1,7 +1,7 @@
 [project]
 name = ""
 version = ""
-description = "API implementing the endpoints to support GPTStonks Chat"
+description = "GPTStonks API allows interacting with financial data sources using natural language."
 authors = [
     {name = "GPTStonks", email = "gptstonks@gmail.com"},
 ]
@@ -30,6 +30,9 @@ license = {text = "MIT"}
 testing = [
     "pytest",
     "pytest-cov",
+]
+llamacpp = [
+    "llama-cpp-python>=0.2.23",
 ]
 
 # [tool.pdm.resolution.overrides]

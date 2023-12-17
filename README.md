@@ -32,6 +32,8 @@ Welcome to the GPTStonks Chatbot API documentation! This API allows you to inter
   - [Table of Contents](#table-of-contents)
   - [Introduction 🌟](#introduction-)
   - [Features 🚀](#features-)
+  - [Supported LLM Providers](#supported-llm-providers)
+  - [Supported Embeddings Providers](#supported-embeddings-providers)
   - [Getting Started 🛠️](#getting-started-%EF%B8%8F)
     - [Prerequisites](#prerequisites)
     - [Installation 🛸](#installation-)
@@ -58,6 +60,18 @@ This API allows you to integrate the GPTStonks financial chatbot into your proje
 - **Customizable Responses**: Tailor the chatbot's responses to suit your specific use case.
 - **Easy Integration**: Built on FastAPI, this API is designed for straightforward integration into your application or platform.
 - **Extensive Documentation**: Detailed documentation and examples to help you get started quickly.
+
+## Supported LLM Providers
+
+- **[Llama.cpp](https://github.com/ggerganov/llama.cpp)**: optimized implementations of the most popular open source LLMs for inference over CPU and GPU. See their docs for more details on supported models, which include Mixtral, Llama 2 and Zephyr among others. Many quantized models (GGUF) can be found in Hugging Face under the user [TheBloke](https://huggingface.co/TheBloke).
+- **[Amazon Bedrock](https://aws.amazon.com/bedrock/)**: foundation models from a variety of providers, including Anthropic and Amazon.
+- **[OpenAI](https://platform.openai.com/docs/models)**: GPT family of foundation models. For now only `instruct` versions are supported, such as `gpt-3.5-turbo-instruct`. Chat versions will be added soon.
+- **[Vertex AI](https://cloud.google.com/vertex-ai)**: similar to Amazon Bedrock but provided by Google. This integration is in alpha version, not recommended for now.
+
+## Supported Embeddings Providers
+
+- **[OpenAI Embeddings](https://platform.openai.com/docs/models/embeddings)**: includes models such as Ada 2.
+- **[Hugging Face](https://huggingface.co/)**: including providers such as BAAI, see their general embedding (BGE) [model list](https://huggingface.co/BAAI/bge-large-en-v1.5#model-list).
 
 ## Getting Started 🛠️
 
@@ -113,13 +127,7 @@ docker run -it -p 8000:8000 --env-file .env ghcr.io/gptstonks/api:main
   > openssl.cnf
   ```
 
-  5. Load the environment variables:
-
-  ```bash
-  source .env
-  ```
-
-  6. Start the API:
+  5. Start the API:
 
   ```bash
   uvicorn gptstonks_api.main:app --host 0.0.0.0 --port 8000

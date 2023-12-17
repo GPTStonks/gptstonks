@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.globals import set_debug
-from langchain.llms import Bedrock, OpenAI, VertexAI
+from langchain.llms import Bedrock, LlamaCpp, OpenAI, VertexAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.tools import DuckDuckGoSearchRun, WikipediaQueryRun, YahooFinanceNewsTool
 from langchain.utilities import (
@@ -36,24 +36,32 @@ from .utils import (
 load_dotenv()
 
 description = """
-GPTStonks API allows interacting with [OpenBB](https://openbb.co/) using natural language.
+GPTStonks API allows interacting with financial data sources using natural language.
 
 # Features
-The API supports the following features:
-- Bedrock LLMs.
+The API provides the following features to its users:
+- Latest news search via [DuckDuckGo](https://duckduckgo.com/) and [Yahoo Finance](https://finance.yahoo.com/).
+- Updated financial data via [OpenBB](https://openbb.co/): equities, cryptos, ETFs, currencies...
+- General knowledge learned during the training of the LLM, dependable on the model.
+- Run locally in an easy way with updated Docker images ([hub](https://hub.docker.com/r/gptstonks/api)).
+
+# Supported AI models
+The following models are supported:
+- [Llama.cpp](https://github.com/ggerganov/llama.cpp) optimized models: Llama 2, Mixtral, Zephyr...
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/) LLMs.
+- [OpenAI](https://platform.openai.com/docs/models) instruct LLMs.
 - Multiple text embedding models on Hugging Face and OpenAI Ada 2 embeddings.
-- Asynchronous processing.
+- [Vertex AI](https://cloud.google.com/vertex-ai) LLMs (alpha version).
 
 # API Operating Modes
 The API can operate in two modes:
-- **Programmer**: only OpenBB SDK is used to retrieve financial and economical data. It is the fastest and cheapest mode, but it is restricted to OpenBB SDK's functionalities.
-- **Agent**: different tools are used, including OpenBB SDK and DuckDuckGo, that can look for general information and specific financial data. It is slower and slightly more expensive than Programmer, but also more powerful.
+- **Programmer**: only OpenBB is used to retrieve financial and economical data. It is the fastest and cheapest mode, but it is restricted to OpenBB's functionalities.
+- **Agent**: different tools are used, including OpenBB and DuckDuckGo, that can look for general information and specific financial data. It is slower and slightly more expensive than Programmer, but also more powerful.
 """
 
 app = FastAPI(
     title="GPTStonks API",
     description=description,
-    summary="API to interact with OpenBB using natural language.",
     version="0.0.1",
     contact={
         "name": "GPTStonks",
@@ -104,11 +112,10 @@ def init_data():
         "temperature": float(os.getenv("LLM_TEMPERATURE", 0.1)),
         "request_timeout": float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
         "max_tokens": int(os.getenv("LLM_MAX_TOKENS", 256)),
+        "top_p": float(os.getenv("LLM_TOP_P", 1.0)),
     }
     if model_provider == "openai":
-        raise NotImplementedError(
-            "OpenAI async API not working with latest llama-index and langchain"
-        )
+        app.llm = OpenAI(**llm_common_kwargs)
     elif model_provider == "anyscale":
         raise NotImplementedError("Anyscale does not support yet async API in langchain")
     elif model_provider == "bedrock":
@@ -117,7 +124,7 @@ def init_data():
             model_id=llm_common_kwargs["model_name"],
             model_kwargs={
                 "temperature": llm_common_kwargs["temperature"],
-                "top_p": float(os.getenv("LLM_TOP_P", 0.9)),
+                "top_p": llm_common_kwargs["top_p"],
                 "max_tokens_to_sample": llm_common_kwargs["max_tokens"],
             },
         )
@@ -125,6 +132,14 @@ def init_data():
         llm_common_kwargs["max_output_tokens"] = llm_common_kwargs["max_tokens"]
         del llm_common_kwargs["max_tokens"]
         app.llm = VertexAI(location=os.getenv("LLM_CLOUD_LOCATION"), **llm_common_kwargs)
+    elif model_provider == "llamacpp":
+        app.llm = LlamaCpp(
+            model_path=llm_model_name,
+            temperature=llm_common_kwargs["temperature"],
+            max_tokens=llm_common_kwargs["max_tokens"],
+            top_p=llm_common_kwargs["top_p"],
+            n_ctx=int(os.getenv("LLM_LLAMACPP_CONTEXT_WINDOW")),
+        )
     else:
         raise NotImplementedError(f"Provider {model_provider} not implemented")
     llamaindex_llm = LangChainLLM(llm=app.llm)

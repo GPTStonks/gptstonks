@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "testing"]
+groups = ["default", "testing", "llamacpp"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:987eb4f857acf9b81f29a0290c099f1f50e1e8eb02663a99e037f05cca47335a"
+content_hash = "sha256:236f9c93e477b0a3f5b050820871b8021c03f4ef279bcde984dc892139e75eee"
 
 [[package]]
 name = "accelerate"
@@ -1077,6 +1077,20 @@ dependencies = [
 files = [
     {file = "langsmith-0.0.69-py3-none-any.whl", hash = "sha256:49a2546bb83eedb0552673cf81a068bb08078d6d48471f4f1018e1d5c6aa46b1"},
     {file = "langsmith-0.0.69.tar.gz", hash = "sha256:8fb5297f274db0576ec650d9bab0319acfbb6622d62bc5bb9fe31c6235dc0358"},
+]
+
+[[package]]
+name = "llama-cpp-python"
+version = "0.2.23"
+requires_python = ">=3.8"
+summary = "Python bindings for the llama.cpp library"
+dependencies = [
+    "diskcache>=5.6.1",
+    "numpy>=1.20.0",
+    "typing-extensions>=4.5.0",
+]
+files = [
+    {file = "llama_cpp_python-0.2.23.tar.gz", hash = "sha256:364b61a13970932ea189b45a1c5dea89797b90e5da00f1fe6e72c47fbc512898"},
 ]
 
 [[package]]
