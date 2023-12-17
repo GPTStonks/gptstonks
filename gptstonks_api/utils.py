@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional
 from urllib.error import HTTPError
 
@@ -7,6 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain.tools.base import BaseTool
 from langchain.utilities import PythonREPL
 from llama_index.postprocessor.types import BaseNodePostprocessor
+from llama_index.prompts.default_prompts import DEFAULT_TEXT_QA_PROMPT_TMPL
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from requests.exceptions import ReadTimeout
 
@@ -167,38 +169,22 @@ def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool
     tool_output: str = tool.run(tool_input)
     model_prompt: str = PromptTemplate(
         input_variables=["context_str", "query_str"],
-        template=(
-            "You are a helpful assistant that answers queries based on a context, using the same language as the query.\n\n"
-            "# CONTEXT\n"
-            "----------------------\n"
-            "{context_str}\n"
-            "----------------------\n\n"
-            "# QUERY\n"
-            "{query_str}\n\n"
-            "# ANSWER\n"
-        ),
+        template=os.getenv("CUSTOM_GPTSTONKS_QA", DEFAULT_TEXT_QA_PROMPT_TMPL),
     ).format(query_str=tool_input, context_str=tool_output)
+    answer: str = llm(model_prompt)
 
-    return llm(model_prompt)
+    return f"> Context retrieved using {tool.name}.\n\n" f"{answer}"
 
 
 async def arun_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool) -> str:
     tool_output: str = await tool.arun(tool_input)
     model_prompt: str = PromptTemplate(
         input_variables=["context_str", "query_str"],
-        template=(
-            "You are a helpful assistant that answers queries based on a context, using the same language as the query.\n\n"
-            "# CONTEXT\n"
-            "----------------------\n"
-            "{context_str}\n"
-            "----------------------\n\n"
-            "# QUERY\n"
-            "{query_str}\n\n"
-            "# ANSWER\n"
-        ),
+        template=os.getenv("CUSTOM_GPTSTONKS_QA", DEFAULT_TEXT_QA_PROMPT_TMPL),
     ).format(query_str=tool_input, context_str=tool_output)
+    answer: str = await llm.apredict(model_prompt)
 
-    return await llm.apredict(model_prompt)
+    return f"> Context retrieved using {tool.name}.\n\n" f"{answer}"
 
 
 def yfinance_info_titles(tool_input: str | dict) -> str:

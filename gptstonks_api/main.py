@@ -11,7 +11,7 @@ from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.globals import set_debug
 from langchain.llms import Bedrock, LlamaCpp, OpenAI, VertexAI
 from langchain.memory import ConversationBufferWindowMemory
-from langchain.tools import DuckDuckGoSearchRun, WikipediaQueryRun, YahooFinanceNewsTool
+from langchain.tools import DuckDuckGoSearchResults, WikipediaQueryRun
 from langchain.utilities import (
     DuckDuckGoSearchAPIWrapper,
     PythonREPL,
@@ -27,10 +27,8 @@ from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from .utils import (
     arun_qa_over_tool_output,
     fix_frequent_code_errors,
-    get_keys_file,
     get_openbb_chat_output,
     get_openbb_chat_output_executed,
-    yfinance_info_titles,
 )
 
 load_dotenv()
@@ -166,9 +164,8 @@ def init_data():
         if os.getenv("REMOVE_POSTPROCESSOR", None) is None
         else None
     )
-    search_tool = DuckDuckGoSearchRun(api_wrapper=DuckDuckGoSearchAPIWrapper())
+    search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
-    yhfinance_tool = YahooFinanceNewsTool()
     app.memory = ConversationBufferWindowMemory(
         memory_key="chat_history", k=0, output_key="output", ai_prefix=app.AI_PREFIX
     )
@@ -182,12 +179,6 @@ def init_data():
                 tool=search_tool,
             ),
             description=search_tool.description,
-            return_direct=True,
-        ),
-        Tool(
-            name=yhfinance_tool.name,
-            func=yfinance_info_titles,
-            description=yhfinance_tool.description,
             return_direct=True,
         ),
         Tool(
@@ -274,7 +265,7 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
                 return {
                     "type": "data",
                     "result_data": res,
-                    "body": "> Data returned using `openbb`. Use with caution.",
+                    "body": "> Data retrieved using `openbb`. Use with caution.",
                 }
             except Exception as e:
                 return {
