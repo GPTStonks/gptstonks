@@ -239,6 +239,9 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
         if use_agent:
             # update openbb tool with PAT (None if not provided)
             app.tools[-1].coroutine = partial(app.tools[-1].coroutine, openbb_pat=openbb_pat)
+            # update QA tools to use original query to respond from the context
+            app.tools[0].coroutine = partial(app.tools[0].coroutine, original_query=query)
+            app.tools[1].coroutine = partial(app.tools[1].coroutine, original_query=query)
             agent_executor = initialize_agent(
                 tools=app.tools,
                 llm=app.llm,
