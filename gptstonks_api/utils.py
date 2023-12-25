@@ -176,13 +176,22 @@ def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool
     return f"> Context retrieved using {tool.name}.\n\n" f"{answer}"
 
 
-async def arun_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool) -> str:
+async def arun_qa_over_tool_output(
+    tool_input: str | dict, llm: BaseLLM, tool: BaseTool, original_query: Optional[str] = None
+) -> str:
     tool_output: str = await tool.arun(tool_input)
-    model_prompt: str = PromptTemplate(
+    model_prompt = PromptTemplate(
         input_variables=["context_str", "query_str"],
         template=os.getenv("CUSTOM_GPTSTONKS_QA", DEFAULT_TEXT_QA_PROMPT_TMPL),
-    ).format(query_str=tool_input, context_str=tool_output)
-    answer: str = await llm.apredict(model_prompt)
+    )
+    if original_query is not None:
+        answer: str = await llm.apredict(
+            model_prompt.format(query_str=original_query, context_str=tool_output)
+        )
+    else:
+        answer: str = await llm.apredict(
+            model_prompt.format(query_str=tool_input, context_str=tool_output)
+        )
 
     return f"> Context retrieved using {tool.name}.\n\n" f"{answer}"
 
