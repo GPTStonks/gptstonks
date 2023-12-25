@@ -10,7 +10,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.globals import set_debug
 from langchain.llms import Bedrock, LlamaCpp, OpenAI, VertexAI
-from langchain.memory import ConversationBufferWindowMemory
 from langchain.tools import DuckDuckGoSearchResults, WikipediaQueryRun
 from langchain.utilities import (
     DuckDuckGoSearchAPIWrapper,
@@ -166,9 +165,6 @@ def init_data():
     )
     search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
-    app.memory = ConversationBufferWindowMemory(
-        memory_key="chat_history", k=0, output_key="output", ai_prefix=app.AI_PREFIX
-    )
     app.tools = [
         Tool(
             name=search_tool.name,
@@ -246,7 +242,6 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
             agent_executor = initialize_agent(
                 tools=app.tools,
                 llm=app.llm,
-                memory=app.memory,
                 agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
                 verbose=True,
                 return_intermediate_steps=False,
@@ -255,6 +250,8 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
                 agent_kwargs={
                     "ai_prefix": app.AI_PREFIX,
                     "prefix": os.getenv("CUSTOM_GPTSTONKS_PREFIX"),
+                    "suffix": os.getenv("CUSTOM_GPTSTONKS_SUFFIX"),
+                    "input_variables": ["input", "agent_scratchpad"],
                 },
             )
             # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
