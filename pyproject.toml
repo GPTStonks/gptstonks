@@ -8,7 +8,7 @@ authors = [
 dependencies = [
     "pre-commit>=3.6.0",
     "fastapi==0.104.1",
-    "openbb==4.0.1",
+    "openbb==4.1.0",
     "openbb-chat>=0.0.8",
     "uvicorn>=0.23.2",
     "sentence-transformers>=2.2.2",
@@ -21,6 +21,16 @@ dependencies = [
     "langchain>=0.0.342",
     "llama-index>=0.9.13",
     "python-dotenv>=1.0.0",
+    "openbb-alpha-vantage>=1.1.0",
+    "openbb-biztoc>=1.1.0",
+    "openbb-cboe>=1.1.0",
+    "openbb-ecb>=1.1.0",
+    "openbb-finra>=1.1.0",
+    "openbb-government-us>=1.1.0",
+    "openbb-nasdaq>=1.1.1",
+    "openbb-seeking-alpha>=1.1.0",
+    "openbb-stockgrid>=1.1.0",
+    "openbb-wsj>=1.1.0",
 ]
 requires-python = ">=3.10,<3.11"
 readme = "README.md"
