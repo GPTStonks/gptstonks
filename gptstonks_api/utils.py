@@ -162,7 +162,27 @@ async def get_openbb_chat_output_executed(
         if "```python" in output_res.response
         else output_res.response
     )
-    return python_repl_utility.run(fix_frequent_code_errors(code_str, openbb_pat))
+    fixed_code_str = fix_frequent_code_errors(code_str, openbb_pat)
+    # run Python and get output
+    repl_output = python_repl_utility.run(fixed_code_str)
+    # get OpenBB's functions called for explicability
+    openbb_funcs_called = []
+    for code_line in code_str.split("\n"):
+        if "obb." in code_line:
+            openbb_funcs_called.append(code_line.split("obb.")[1].strip())
+    openbb_platform_ref_uri = "https://docs.openbb.co/platform/reference/"
+    openbb_funcs_called_str = "".join(
+        [
+            f"- {x} [[documentation]({openbb_platform_ref_uri}{x.split('(')[0].replace('.', '/')})]\n"
+            for x in openbb_funcs_called
+        ]
+    )
+
+    return (
+        "> Context retrieved using OpenBB. "
+        f"OpenBB's functions called:\n{openbb_funcs_called_str.strip()}\n\n"
+        f"```json\n{repl_output.strip()}\n```"
+    )
 
 
 def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool) -> str:
