@@ -261,12 +261,21 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
             agent_output_str = await agent_executor.arun(query)
 
             try:
-                res = json.loads(agent_output_str)
-                return {
-                    "type": "data",
-                    "result_data": res,
-                    "body": "> Data retrieved using `openbb`. Use with caution.",
-                }
+                if "```json" in agent_output_str:
+                    result_data_str = agent_output_str.split("```json")[1].split("```")[0].strip()
+                    result_data = json.loads(result_data_str)
+                    body_data_str = agent_output_str.split("```json")[0].strip()
+
+                    return {
+                        "type": "data",
+                        "result_data": result_data,
+                        "body": body_data_str,
+                    }
+                else:
+                    return {
+                        "type": "data",
+                        "body": agent_output_str,
+                    }
             except Exception as e:
                 return {
                     "type": "data",
