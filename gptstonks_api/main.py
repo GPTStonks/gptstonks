@@ -19,7 +19,10 @@ from langchain.utilities import (
 from llama_index.embeddings import OpenAIEmbedding
 from llama_index.embeddings.openai import OpenAIEmbeddingModelType
 from llama_index.llms import LangChainLLM
-from llama_index.postprocessor import MetadataReplacementPostProcessor
+from llama_index.postprocessor import (
+    MetadataReplacementPostProcessor,
+    SimilarityPostprocessor,
+)
 from openbb import obb
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 
@@ -158,10 +161,13 @@ def init_data():
     app.AI_PREFIX = "GPTSTONKS_RESPONSE"
     app.python_repl_utility = PythonREPL()
     app.python_repl_utility.globals = globals()
-    app.node_postprocessor = (
-        MetadataReplacementPostProcessor(target_metadata_key="extra_context")
+    app.node_postprocessors = (
+        [
+            SimilarityPostprocessor(similarity_cutoff=0.8),
+            MetadataReplacementPostProcessor(target_metadata_key="extra_context"),
+        ]
         if os.getenv("REMOVE_POSTPROCESSOR", None) is None
-        else None
+        else [SimilarityPostprocessor(similarity_cutoff=0.8)]
     )
     search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
@@ -195,7 +201,7 @@ def init_data():
                 get_openbb_chat_output_executed,
                 auto_llama_index=app.auto_llama_index,
                 python_repl_utility=app.python_repl_utility,
-                node_postprocessor=app.node_postprocessor,
+                node_postprocessors=app.node_postprocessors,
             ),
             description=os.getenv("OPENBBCHAT_TOOL_DESCRIPTION"),
             return_direct=True,
@@ -286,7 +292,7 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
             openbbchat_output = await get_openbb_chat_output(
                 query_str=query,
                 auto_llama_index=app.auto_llama_index,
-                node_postprocessor=app.node_postprocessor,
+                node_postprocessors=app.node_postprocessors,
             )
             code_str = (
                 openbbchat_output.response.split("```python")[1].split("```")[0]
