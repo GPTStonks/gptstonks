@@ -5,7 +5,7 @@
 groups = ["default", "testing", "llamacpp"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:31dd54fa964a51e5ffaec391540fb29143b89fceba278045401176a9e05f3dee"
+content_hash = "sha256:0e7bc76e7af14d9ad0f6ce2ffd9c818c951bb0bc025ac3af4b96761e126afce3"
 
 [[package]]
 name = "accelerate"
@@ -2037,6 +2037,19 @@ files = [
 ]
 
 [[package]]
+name = "outcome"
+version = "1.3.0.post0"
+requires_python = ">=3.7"
+summary = "Capture the outcome of Python function calls."
+dependencies = [
+    "attrs>=19.2.0",
+]
+files = [
+    {file = "outcome-1.3.0.post0-py2.py3-none-any.whl", hash = "sha256:e771c5ce06d1415e356078d3bdd68523f284b4ce5419828922b6871e65eda82b"},
+    {file = "outcome-1.3.0.post0.tar.gz", hash = "sha256:9dcf02e65f2971b80047b377468e72a268e15c0af3cf1238e6ff14f7f91143b8"},
+]
+
+[[package]]
 name = "packaging"
 version = "23.2"
 requires_python = ">=3.7"
@@ -2443,6 +2456,19 @@ dependencies = [
 files = [
     {file = "pytest-7.4.3-py3-none-any.whl", hash = "sha256:0d009c083ea859a71b76adf7c1d502e4bc170b80a8ef002da5806527b9591fac"},
     {file = "pytest-7.4.3.tar.gz", hash = "sha256:d989d136982de4e3b29dabcc838ad581c64e8ed52c11fbe86ddebd9da0818cd5"},
+]
+
+[[package]]
+name = "pytest-asyncio"
+version = "0.23.2"
+requires_python = ">=3.8"
+summary = "Pytest support for asyncio"
+dependencies = [
+    "pytest>=7.0.0",
+]
+files = [
+    {file = "pytest-asyncio-0.23.2.tar.gz", hash = "sha256:c16052382554c7b22d48782ab3438d5b10f8cf7a4bdcae7f0f67f097d95beecc"},
+    {file = "pytest_asyncio-0.23.2-py3-none-any.whl", hash = "sha256:ea9021364e32d58f0be43b91c6233fb8d2224ccef2398d6837559e587682808f"},
 ]
 
 [[package]]
@@ -2869,6 +2895,15 @@ files = [
 ]
 
 [[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+summary = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
+files = [
+    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
+    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
+]
+
+[[package]]
 name = "soupsieve"
 version = "2.5"
 requires_python = ">=3.8"
@@ -3151,6 +3186,25 @@ dependencies = [
 files = [
     {file = "transformers-4.36.0-py3-none-any.whl", hash = "sha256:e5a9d9424bcbc5008782ddd79ecbc3a50991e168cc730a14c4c89e80c61f419d"},
     {file = "transformers-4.36.0.tar.gz", hash = "sha256:64e120d252db4bdcd355288d19e857dac9d89886f9d0ac20244cb9af3142bb50"},
+]
+
+[[package]]
+name = "trio"
+version = "0.23.2"
+requires_python = ">=3.8"
+summary = "A friendly Python library for async concurrency and I/O"
+dependencies = [
+    "attrs>=20.1.0",
+    "cffi>=1.14; os_name == \"nt\" and implementation_name != \"pypy\"",
+    "exceptiongroup; python_version < \"3.11\"",
+    "idna",
+    "outcome",
+    "sniffio>=1.3.0",
+    "sortedcontainers",
+]
+files = [
+    {file = "trio-0.23.2-py3-none-any.whl", hash = "sha256:5a0b566fa5d50cf231cfd6b08f3b03aa4179ff004b8f3144059587039e2b26d3"},
+    {file = "trio-0.23.2.tar.gz", hash = "sha256:da1d35b9a2b17eb32cae2e763b16551f9aa6703634735024e32f325c9285069e"},
 ]
 
 [[package]]

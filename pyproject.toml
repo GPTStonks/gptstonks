@@ -40,6 +40,8 @@ license = {text = "MIT"}
 testing = [
     "pytest",
     "pytest-cov",
+    "trio>=0.23.2",
+    "pytest-asyncio>=0.23.2",
 ]
 llamacpp = [
     "llama-cpp-python>=0.2.23",

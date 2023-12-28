@@ -130,7 +130,9 @@ async def get_openbb_chat_output(
     if node_postprocessors is not None:
         for node_postprocessor in node_postprocessors:
             nodes = node_postprocessor.postprocess_nodes(nodes)
-    return await auto_llama_index._query_engine.asynthesize(query_bundle=query_str, nodes=nodes)
+    return (
+        await auto_llama_index._query_engine.asynthesize(query_bundle=query_str, nodes=nodes)
+    ).response
 
 
 def fix_frequent_code_errors(prev_code: str, openbb_pat: Optional[str] = None) -> str:
@@ -150,27 +152,26 @@ def fix_frequent_code_errors(prev_code: str, openbb_pat: Optional[str] = None) -
     return prev_code
 
 
-async def get_openbb_chat_output_executed(
-    query_str: str,
-    auto_llama_index: AutoLlamaIndex,
-    python_repl_utility: PythonREPL,
-    node_postprocessors: Optional[List[BaseNodePostprocessor]] = None,
-    openbb_pat: Optional[str] = None,
+def run_repl_over_openbb(
+    openbb_chat_output: str, python_repl_utility: PythonREPL, openbb_pat: Optional[str] = None
 ) -> str:
-    output_res = await get_openbb_chat_output(query_str, auto_llama_index, node_postprocessors)
+    if openbb_chat_output.startswith(">") or "```python" not in openbb_chat_output:
+        # already in final response format with context provider added
+        # or no code available to execute
+        return openbb_chat_output
     code_str = (
-        output_res.response.split("```python")[1].split("```")[0]
-        if "```python" in output_res.response
-        else output_res.response
+        openbb_chat_output.split("```python")[1].split("```")[0]
+        if "```python" in openbb_chat_output
+        else openbb_chat_output
     )
     fixed_code_str = fix_frequent_code_errors(code_str, openbb_pat)
     # run Python and get output
     repl_output = python_repl_utility.run(fixed_code_str)
     # get OpenBB's functions called for explicability
-    openbb_funcs_called = []
+    openbb_funcs_called = set()
     for code_line in code_str.split("\n"):
         if "obb." in code_line:
-            openbb_funcs_called.append(code_line.split("obb.")[1].strip())
+            openbb_funcs_called.add(code_line.split("obb.")[1].strip())
     openbb_platform_ref_uri = "https://docs.openbb.co/platform/reference/"
     openbb_funcs_called_str = "".join(
         [
@@ -184,6 +185,17 @@ async def get_openbb_chat_output_executed(
         f"OpenBB's functions called:\n{openbb_funcs_called_str.strip()}\n\n"
         f"```json\n{repl_output.strip()}\n```"
     )
+
+
+async def get_openbb_chat_output_executed(
+    query_str: str,
+    auto_llama_index: AutoLlamaIndex,
+    python_repl_utility: PythonREPL,
+    node_postprocessors: Optional[List[BaseNodePostprocessor]] = None,
+    openbb_pat: Optional[str] = None,
+) -> str:
+    output_res = await get_openbb_chat_output(query_str, auto_llama_index, node_postprocessors)
+    return run_repl_over_openbb(output_res, python_repl_utility, openbb_pat)
 
 
 def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool) -> str:
