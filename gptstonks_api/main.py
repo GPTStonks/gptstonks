@@ -30,7 +30,7 @@ from .utils import (
     arun_qa_over_tool_output,
     fix_frequent_code_errors,
     get_openbb_chat_output,
-    get_openbb_chat_output_executed,
+    run_repl_over_openbb,
 )
 
 load_dotenv()
@@ -115,11 +115,11 @@ def init_data():
         "top_p": float(os.getenv("LLM_TOP_P", 1.0)),
     }
     if model_provider == "openai":
-        app.llm = OpenAI(**llm_common_kwargs)
+        llm = OpenAI(**llm_common_kwargs)
     elif model_provider == "anyscale":
         raise NotImplementedError("Anyscale does not support yet async API in langchain")
     elif model_provider == "bedrock":
-        app.llm = Bedrock(
+        llm = Bedrock(
             credentials_profile_name=None,
             model_id=llm_common_kwargs["model_name"],
             model_kwargs={
@@ -131,9 +131,9 @@ def init_data():
     elif model_provider == "vertexai":
         llm_common_kwargs["max_output_tokens"] = llm_common_kwargs["max_tokens"]
         del llm_common_kwargs["max_tokens"]
-        app.llm = VertexAI(location=os.getenv("LLM_CLOUD_LOCATION"), **llm_common_kwargs)
+        llm = VertexAI(location=os.getenv("LLM_CLOUD_LOCATION"), **llm_common_kwargs)
     elif model_provider == "llamacpp":
-        app.llm = LlamaCpp(
+        llm = LlamaCpp(
             model_path=llm_model_name,
             temperature=llm_common_kwargs["temperature"],
             max_tokens=llm_common_kwargs["max_tokens"],
@@ -142,7 +142,7 @@ def init_data():
         )
     else:
         raise NotImplementedError(f"Provider {model_provider} not implemented")
-    llamaindex_llm = LangChainLLM(llm=app.llm)
+    llamaindex_llm = LangChainLLM(llm=llm)
 
     # Load AutoLlamaIndex
     app.auto_llama_index = AutoLlamaIndex(
@@ -158,7 +158,7 @@ def init_data():
     )
 
     # Create agent
-    app.AI_PREFIX = "GPTSTONKS_RESPONSE"
+    AI_PREFIX = "GPTSTONKS_RESPONSE"
     app.python_repl_utility = PythonREPL()
     app.python_repl_utility.globals = globals()
     app.node_postprocessors = (
@@ -171,13 +171,13 @@ def init_data():
     )
     search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
-    app.tools = [
+    tools = [
         Tool(
             name=search_tool.name,
             func=None,
             coroutine=partial(
                 arun_qa_over_tool_output,
-                llm=app.llm,
+                llm=llm,
                 tool=search_tool,
             ),
             description=search_tool.description,
@@ -188,7 +188,7 @@ def init_data():
             func=None,
             coroutine=partial(
                 arun_qa_over_tool_output,
-                llm=app.llm,
+                llm=llm,
                 tool=wikipedia_tool,
             ),
             description=wikipedia_tool.description,
@@ -198,15 +198,29 @@ def init_data():
             name="openbb_terminal",
             func=None,
             coroutine=partial(
-                get_openbb_chat_output_executed,
+                get_openbb_chat_output,
                 auto_llama_index=app.auto_llama_index,
-                python_repl_utility=app.python_repl_utility,
                 node_postprocessors=app.node_postprocessors,
             ),
             description=os.getenv("OPENBBCHAT_TOOL_DESCRIPTION"),
             return_direct=True,
         ),
     ]
+    app.agent_executor = initialize_agent(
+        tools=tools,
+        llm=llm,
+        agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+        verbose=True,
+        return_intermediate_steps=False,
+        max_iterations=2,
+        early_stopping_method=os.getenv("AGENT_EARLY_STOPPING_METHOD", "generate"),
+        agent_kwargs={
+            "ai_prefix": AI_PREFIX,
+            "prefix": os.getenv("CUSTOM_GPTSTONKS_PREFIX"),
+            "suffix": os.getenv("CUSTOM_GPTSTONKS_SUFFIX"),
+            "input_variables": ["input", "agent_scratchpad"],
+        },
+    )
 
 
 @app.post("/process_query_async")
@@ -243,78 +257,41 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
 
     try:
         if use_agent:
-            # update openbb tool with PAT (None if not provided)
-            app.tools[-1].coroutine = partial(app.tools[-1].coroutine, openbb_pat=openbb_pat)
-            # update QA tools to use original query to respond from the context
-            app.tools[0].coroutine = partial(app.tools[0].coroutine, original_query=query)
-            app.tools[1].coroutine = partial(app.tools[1].coroutine, original_query=query)
-            agent_executor = initialize_agent(
-                tools=app.tools,
-                llm=app.llm,
-                agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
-                verbose=True,
-                return_intermediate_steps=False,
-                max_iterations=2,
-                early_stopping_method=os.getenv("AGENT_EARLY_STOPPING_METHOD", "generate"),
-                agent_kwargs={
-                    "ai_prefix": app.AI_PREFIX,
-                    "prefix": os.getenv("CUSTOM_GPTSTONKS_PREFIX"),
-                    "suffix": os.getenv("CUSTOM_GPTSTONKS_SUFFIX"),
-                    "input_variables": ["input", "agent_scratchpad"],
-                },
-            )
             # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
-            agent_output_str = await agent_executor.arun(query)
-
-            try:
-                if "```json" in agent_output_str:
-                    result_data_str = agent_output_str.split("```json")[1].split("```")[0].strip()
-                    result_data = json.loads(result_data_str)
-                    body_data_str = agent_output_str.split("```json")[0].strip()
-
-                    return {
-                        "type": "data",
-                        "result_data": result_data,
-                        "body": body_data_str,
-                    }
-                else:
-                    return {
-                        "type": "data",
-                        "body": agent_output_str,
-                    }
-            except Exception as e:
-                return {
-                    "type": "data",
-                    "body": agent_output_str,
-                }
+            output_str = await app.agent_executor.arun(query)
         else:
             # Run programmer. Useful with LLMs of less quality (e.g., smaller open source LLMs)
-            openbbchat_output = await get_openbb_chat_output(
+            output_str = await get_openbb_chat_output(
                 query_str=query,
                 auto_llama_index=app.auto_llama_index,
                 node_postprocessors=app.node_postprocessors,
             )
-            code_str = (
-                openbbchat_output.response.split("```python")[1].split("```")[0]
-                if "```python" in openbbchat_output.response
-                else openbbchat_output.response
-            )
-            executed_output_str = app.python_repl_utility.run(
-                fix_frequent_code_errors(code_str, openbb_pat)
-            )
+        agent_output_str = run_repl_over_openbb(
+            openbb_chat_output=output_str,
+            python_repl_utility=app.python_repl_utility,
+            openbb_pat=openbb_pat,
+        )
+        try:
+            if "```json" in agent_output_str:
+                result_data_str = agent_output_str.split("```json")[1].split("```")[0].strip()
+                result_data = json.loads(result_data_str)
+                body_data_str = agent_output_str.split("```json")[0].strip()
 
-            try:
-                res = json.loads(executed_output_str)
                 return {
                     "type": "data",
-                    "result_data": res,
-                    "body": openbbchat_output.response,
+                    "result_data": result_data,
+                    "body": body_data_str,
                 }
-            except Exception as e:
+            else:
                 return {
                     "type": "data",
-                    "body": f"{openbbchat_output.response}\n\nResult: {executed_output_str}",
+                    "body": agent_output_str,
                 }
+        except Exception as e:
+            return {
+                "type": "data",
+                "body": agent_output_str,
+            }
     except Exception as e:
         print(e)
         return {"type": "error", "body": "Sorry, something went wrong!"}
