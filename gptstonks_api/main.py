@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, Tool, initialize_agent
+from langchain.chat_models import ChatOpenAI
 from langchain.globals import set_debug
 from langchain.llms import Bedrock, LlamaCpp, OpenAI, VertexAI
 from langchain.tools import DuckDuckGoSearchResults, WikipediaQueryRun
@@ -26,6 +27,7 @@ from llama_index.postprocessor import (
 from openbb import obb
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 
+from .chat_model_llm_iface import ChatModelWithLLMIface
 from .utils import (
     arun_qa_over_tool_output,
     fix_frequent_code_errors,
@@ -115,7 +117,10 @@ def init_data():
         "top_p": float(os.getenv("LLM_TOP_P", 1.0)),
     }
     if model_provider == "openai":
-        llm = OpenAI(**llm_common_kwargs)
+        if "instruct" in llm_model_name:
+            llm = OpenAI(**llm_common_kwargs)
+        else:
+            llm = ChatModelWithLLMIface(chat_model=ChatOpenAI(**llm_common_kwargs))
     elif model_provider == "anyscale":
         raise NotImplementedError("Anyscale does not support yet async API in langchain")
     elif model_provider == "bedrock":
