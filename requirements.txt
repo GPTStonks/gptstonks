@@ -1,7 +1,0 @@
-pre-commit==3.*
-pytest==7.*
-fastapi==0.*
-openbb-chat>=0.0.6
-uvicorn>=0.23.2
-sentence-transformers>=2.2.2
-duckduckgo-search>=3.8.1
