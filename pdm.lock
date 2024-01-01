@@ -5,7 +5,7 @@
 groups = ["default", "testing", "llamacpp"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:0e7bc76e7af14d9ad0f6ce2ffd9c818c951bb0bc025ac3af4b96761e126afce3"
+content_hash = "sha256:1a45195ca8580504c2ac05b7c848a00903ffa5f66c430e3fc8e885df85a81755"
 
 [[package]]
 name = "accelerate"
@@ -69,19 +69,6 @@ dependencies = [
 files = [
     {file = "aiosignal-1.3.1-py3-none-any.whl", hash = "sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17"},
     {file = "aiosignal-1.3.1.tar.gz", hash = "sha256:54cd96e15e1649b75d6c87526a6ff0b6c1b0dd3459f43d9ca11d48c339b68cfc"},
-]
-
-[[package]]
-name = "aiostream"
-version = "0.5.2"
-requires_python = ">=3.8"
-summary = "Generator-based operators for asynchronous iteration"
-dependencies = [
-    "typing-extensions",
-]
-files = [
-    {file = "aiostream-0.5.2-py3-none-any.whl", hash = "sha256:054660370be9d37f6fe3ece3851009240416bd082e469fd90cc8673d3818cf71"},
-    {file = "aiostream-0.5.2.tar.gz", hash = "sha256:b71b519a2d66c38f0872403ab86417955b77352f08d9ad02ad46fc3926b389f4"},
 ]
 
 [[package]]
@@ -551,6 +538,16 @@ files = [
 ]
 
 [[package]]
+name = "dnspython"
+version = "2.4.2"
+requires_python = ">=3.8,<4.0"
+summary = "DNS toolkit"
+files = [
+    {file = "dnspython-2.4.2-py3-none-any.whl", hash = "sha256:57c6fbaaeaaf39c891292012060beb141791735dbb4004798328fc2c467402d8"},
+    {file = "dnspython-2.4.2.tar.gz", hash = "sha256:8dcfae8c7460a2f84b4072e26f1c9f4101ca20c071649cb7c34e8b6a93d58984"},
+]
+
+[[package]]
 name = "duckduckgo-search"
 version = "4.1.0"
 requires_python = ">=3.8"
@@ -988,7 +985,7 @@ files = [
 
 [[package]]
 name = "langchain"
-version = "0.0.350"
+version = "0.0.353"
 requires_python = ">=3.8.1,<4.0"
 summary = "Building applications with LLMs through composability"
 dependencies = [
@@ -999,16 +996,16 @@ dependencies = [
     "dataclasses-json<0.7,>=0.5.7",
     "jsonpatch<2.0,>=1.33",
     "langchain-community<0.1,>=0.0.2",
-    "langchain-core<0.2,>=0.1",
-    "langsmith<0.1.0,>=0.0.63",
+    "langchain-core<0.2,>=0.1.4",
+    "langsmith<0.1.0,>=0.0.70",
     "numpy<2,>=1",
     "pydantic<3,>=1",
     "requests<3,>=2",
     "tenacity<9.0.0,>=8.1.0",
 ]
 files = [
-    {file = "langchain-0.0.350-py3-none-any.whl", hash = "sha256:11b605f325a4271a7815baaec05bc7622e3ad1f10f26b05c752cafa27663ed38"},
-    {file = "langchain-0.0.350.tar.gz", hash = "sha256:f0e68a92d200bb722586688ab7b411b2430bd98ad265ca03b264e7e7acbb6c01"},
+    {file = "langchain-0.0.353-py3-none-any.whl", hash = "sha256:54cac8b74fbefacddcdf0c443619a7331d6b59fe94fa2a48a4d7da2b59cf1f63"},
+    {file = "langchain-0.0.353.tar.gz", hash = "sha256:a095ea819f13a3606ced699182a8369eb2d77034ec8c913983675d6dd9a98196"},
 ]
 
 [[package]]
@@ -1034,7 +1031,7 @@ files = [
 
 [[package]]
 name = "langchain-core"
-version = "0.1.1"
+version = "0.1.4"
 requires_python = ">=3.8.1,<4.0"
 summary = "Building applications with LLMs through composability"
 dependencies = [
@@ -1048,13 +1045,13 @@ dependencies = [
     "tenacity<9.0.0,>=8.1.0",
 ]
 files = [
-    {file = "langchain_core-0.1.1-py3-none-any.whl", hash = "sha256:35b49abde43f37aa2fb2f9a2e11331218036dc34395943d12c2d305d5512a8be"},
-    {file = "langchain_core-0.1.1.tar.gz", hash = "sha256:1253acc691548e8ae97c864cc94370d94fbc9e3244751aeaad0b1e9d5150eca4"},
+    {file = "langchain_core-0.1.4-py3-none-any.whl", hash = "sha256:c62bd362d5abf5359436a99b29629e12a4d1ede9f1704dc958cdb8530a791efd"},
+    {file = "langchain_core-0.1.4.tar.gz", hash = "sha256:f700138689c9014e23d3c29796a892dccf7f2a42901cb8817671823e1a24724c"},
 ]
 
 [[package]]
 name = "langsmith"
-version = "0.0.69"
+version = "0.0.75"
 requires_python = ">=3.8.1,<4.0"
 summary = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 dependencies = [
@@ -1062,8 +1059,8 @@ dependencies = [
     "requests<3,>=2",
 ]
 files = [
-    {file = "langsmith-0.0.69-py3-none-any.whl", hash = "sha256:49a2546bb83eedb0552673cf81a068bb08078d6d48471f4f1018e1d5c6aa46b1"},
-    {file = "langsmith-0.0.69.tar.gz", hash = "sha256:8fb5297f274db0576ec650d9bab0319acfbb6622d62bc5bb9fe31c6235dc0358"},
+    {file = "langsmith-0.0.75-py3-none-any.whl", hash = "sha256:3e008854204c5eaae007f34c7e249059218605689c385c037f6a40cac044833b"},
+    {file = "langsmith-0.0.75.tar.gz", hash = "sha256:3fd44c58bd53cb9366af3de129c7f11b6947914f1bb598a585240df0e2c566eb"},
 ]
 
 [[package]]
@@ -1082,13 +1079,12 @@ files = [
 
 [[package]]
 name = "llama-index"
-version = "0.9.13"
+version = "0.9.23"
 requires_python = ">=3.8.1,<4.0"
 summary = "Interface between LLMs and your data"
 dependencies = [
     "SQLAlchemy[asyncio]>=1.4.49",
     "aiohttp<4.0.0,>=3.8.6",
-    "aiostream<0.6.0,>=0.5.2",
     "beautifulsoup4<5.0.0,>=4.12.2",
     "dataclasses-json",
     "deprecated>=1.2.9.3",
@@ -1106,8 +1102,8 @@ dependencies = [
     "typing-inspect>=0.8.0",
 ]
 files = [
-    {file = "llama_index-0.9.13-py3-none-any.whl", hash = "sha256:1fba9039e6b223f7940d2bde7a587638af886d220d2074780660b010fb0149f5"},
-    {file = "llama_index-0.9.13.tar.gz", hash = "sha256:dd12003395e4e92e8b70879f3845e4bdd4614027870b0979253ba9291bae4c35"},
+    {file = "llama_index-0.9.23-py3-none-any.whl", hash = "sha256:88ffb9754391d6e46dd128a37263939fca93111953a77d3b4cd4444268176892"},
+    {file = "llama_index-0.9.23.tar.gz", hash = "sha256:551222c5ed6996ba3003f7c756842c4989fe27a7bb31a7c1a7b042eff6db7125"},
 ]
 
 [[package]]
@@ -1605,7 +1601,7 @@ files = [
 
 [[package]]
 name = "openbb-chat"
-version = "0.0.8"
+version = "0.0.9"
 requires_python = ">=3.10"
 summary = "Deep learning package to add chat capabilities to OpenBB"
 dependencies = [
@@ -1614,8 +1610,8 @@ dependencies = [
     "bitsandbytes>=0.41.1",
     "einops>=0.6.1",
     "guidance>=0.0.64",
-    "langchain>=0.0.334",
-    "llama-index>=0.8.67",
+    "langchain>=0.0.353",
+    "llama-index>=0.9.23",
     "optimum>=1.12.0",
     "peft>=0.5.0",
     "pre-commit>=3.3.3",
@@ -1627,8 +1623,8 @@ dependencies = [
     "transformers>=4.33.0",
 ]
 files = [
-    {file = "openbb_chat-0.0.8-py3-none-any.whl", hash = "sha256:f28aecf41af2ee712dbb2556c4830c016e33a34c71da0d6ab6c3684896b66376"},
-    {file = "openbb_chat-0.0.8.tar.gz", hash = "sha256:ba4679dfc86379d632fa748226e4b0cbb468e6cc60f307b3e285558d97a6cbee"},
+    {file = "openbb_chat-0.0.9-py3-none-any.whl", hash = "sha256:13585fb8089e7c4d0fc44b8f338b90c361766c8ba799a7495dc337e083a27281"},
+    {file = "openbb_chat-0.0.9.tar.gz", hash = "sha256:ad4e81ebc06abb9017e6757111b9e2287b81f867f2a2cd474ce18a020b2498ca"},
 ]
 
 [[package]]
@@ -2396,6 +2392,32 @@ dependencies = [
 files = [
     {file = "PyJWT-2.8.0-py3-none-any.whl", hash = "sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320"},
     {file = "PyJWT-2.8.0.tar.gz", hash = "sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de"},
+]
+
+[[package]]
+name = "pymongo"
+version = "4.6.1"
+requires_python = ">=3.7"
+summary = "Python driver for MongoDB <http://www.mongodb.org>"
+dependencies = [
+    "dnspython<3.0.0,>=1.16.0",
+]
+files = [
+    {file = "pymongo-4.6.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:4344c30025210b9fa80ec257b0e0aab5aa1d5cca91daa70d82ab97b482cc038e"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux1_i686.whl", hash = "sha256:1c5654bb8bb2bdb10e7a0bc3c193dd8b49a960b9eebc4381ff5a2043f4c3c441"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:eaf2f65190c506def2581219572b9c70b8250615dc918b3b7c218361a51ec42e"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux2014_i686.whl", hash = "sha256:262356ea5fcb13d35fb2ab6009d3927bafb9504ef02339338634fffd8a9f1ae4"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux2014_ppc64le.whl", hash = "sha256:2dd2f6960ee3c9360bed7fb3c678be0ca2d00f877068556785ec2eb6b73d2414"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux2014_s390x.whl", hash = "sha256:ff925f1cca42e933376d09ddc254598f8c5fcd36efc5cac0118bb36c36217c41"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux2014_x86_64.whl", hash = "sha256:3cadf7f4c8e94d8a77874b54a63c80af01f4d48c4b669c8b6867f86a07ba994f"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:55dac73316e7e8c2616ba2e6f62b750918e9e0ae0b2053699d66ca27a7790105"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:154b361dcb358ad377d5d40df41ee35f1cc14c8691b50511547c12404f89b5cb"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:2940aa20e9cc328e8ddeacea8b9a6f5ddafe0b087fedad928912e787c65b4909"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:010bc9aa90fd06e5cc52c8fac2c2fd4ef1b5f990d9638548dde178005770a5e8"},
+    {file = "pymongo-4.6.1-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e470fa4bace5f50076c32f4b3cc182b31303b4fefb9b87f990144515d572820b"},
+    {file = "pymongo-4.6.1-cp310-cp310-win32.whl", hash = "sha256:da08ea09eefa6b960c2dd9a68ec47949235485c623621eb1d6c02b46765322ac"},
+    {file = "pymongo-4.6.1-cp310-cp310-win_amd64.whl", hash = "sha256:13d613c866f9f07d51180f9a7da54ef491d130f169e999c27e7633abe8619ec9"},
+    {file = "pymongo-4.6.1.tar.gz", hash = "sha256:31dab1f3e1d0cdd57e8df01b645f52d43cc1b653ed3afd535d2891f4fc4f9712"},
 ]
 
 [[package]]

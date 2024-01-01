@@ -26,8 +26,8 @@ from llama_index.postprocessor import (
 )
 from openbb import obb
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
+from openbb_chat.llms.chat_model_llm_iface import ChatModelWithLLMIface
 
-from .chat_model_llm_iface import ChatModelWithLLMIface
 from .utils import (
     arun_qa_over_tool_output,
     fix_frequent_code_errors,
