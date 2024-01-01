@@ -126,13 +126,11 @@ async def get_openbb_chat_output(
     auto_llama_index: AutoLlamaIndex,
     node_postprocessors: Optional[List[BaseNodePostprocessor]] = None,
 ) -> str:
-    nodes = await auto_llama_index._retriever.aretrieve(query_str)
+    nodes = await auto_llama_index.aretrieve(query_str)
     if node_postprocessors is not None:
         for node_postprocessor in node_postprocessors:
             nodes = node_postprocessor.postprocess_nodes(nodes)
-    return (
-        await auto_llama_index._query_engine.asynthesize(query_bundle=query_str, nodes=nodes)
-    ).response
+    return (await auto_llama_index.asynth(str_or_query_bundle=query_str, nodes=nodes)).response
 
 
 def fix_frequent_code_errors(prev_code: str, openbb_pat: Optional[str] = None) -> str:

@@ -9,7 +9,7 @@ dependencies = [
     "pre-commit>=3.6.0",
     "fastapi==0.104.1",
     "openbb==4.1.0",
-    "openbb-chat>=0.0.8",
+    "openbb-chat>=0.0.9",
     "uvicorn>=0.23.2",
     "sentence-transformers>=2.2.2",
     "duckduckgo-search>=3.8.1",
@@ -31,6 +31,7 @@ dependencies = [
     "openbb-seeking-alpha>=1.1.0",
     "openbb-stockgrid>=1.1.0",
     "openbb-wsj>=1.1.0",
+    "pymongo>=4.6.1",
 ]
 requires-python = ">=3.10,<3.11"
 readme = "README.md"
