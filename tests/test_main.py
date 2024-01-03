@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from ..gptstonks_api.main import app
+from gptstonks_api.main import app
 
 client = TestClient(app)
 
