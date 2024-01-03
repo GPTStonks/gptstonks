@@ -51,6 +51,10 @@ llamacpp = [
 # [tool.pdm.resolution.overrides]
 # Not needed for now
 
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
 
 [build-system]
 requires = ["pdm-backend"]

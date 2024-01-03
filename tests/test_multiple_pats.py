@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from httpx import AsyncClient, codes
 
-from ..gptstonks_api.main import app, init_data
+from gptstonks_api.main import app, init_data
 
 
 async def run_multiple_async_queries():
