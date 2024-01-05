@@ -28,6 +28,8 @@ from openbb import obb
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_chat.llms.chat_model_llm_iface import ChatModelWithLLMIface
 
+from .callbacks import ToolExecutionOrderCallback
+from .explicability import add_context_to_output
 from .utils import (
     arun_qa_over_tool_output,
     fix_frequent_code_errors,
@@ -42,7 +44,7 @@ GPTStonks API allows interacting with financial data sources using natural langu
 
 # Features
 The API provides the following features to its users:
-- Latest news search via [DuckDuckGo](https://duckduckgo.com/) and [Yahoo Finance](https://finance.yahoo.com/).
+- Latest news search via [DuckDuckGo](https://duckduckgo.com/).
 - Updated financial data via [OpenBB](https://openbb.co/): equities, cryptos, ETFs, currencies...
 - General knowledge learned during the training of the LLM, dependable on the model.
 - Run locally in an easy way with updated Docker images ([hub](https://hub.docker.com/r/gptstonks/api)).
@@ -120,7 +122,12 @@ def init_data():
         if "instruct" in llm_model_name:
             llm = OpenAI(**llm_common_kwargs)
         else:
-            llm = ChatModelWithLLMIface(chat_model=ChatOpenAI(**llm_common_kwargs))
+            llm = ChatModelWithLLMIface(
+                chat_model=ChatOpenAI(**llm_common_kwargs),
+                system_message=os.getenv(
+                    "LLM_CHAT_MODEL_SYSTEM_MESSAGE", "You write concise and complete answers."
+                ),
+            )
     elif model_provider == "anyscale":
         raise NotImplementedError("Anyscale does not support yet async API in langchain")
     elif model_provider == "bedrock":
@@ -166,41 +173,23 @@ def init_data():
     AI_PREFIX = "GPTSTONKS_RESPONSE"
     app.python_repl_utility = PythonREPL()
     app.python_repl_utility.globals = globals()
-    app.node_postprocessors = (
-        [
-            SimilarityPostprocessor(similarity_cutoff=0.8),
-            MetadataReplacementPostProcessor(target_metadata_key="extra_context"),
-        ]
-        if os.getenv("REMOVE_POSTPROCESSOR", None) is None
-        else [SimilarityPostprocessor(similarity_cutoff=0.8)]
-    )
+    app.node_postprocessors = [
+        SimilarityPostprocessor(
+            similarity_cutoff=os.getenv("SIMILARITY_POSTPROCESSOR_CUTOFF", 0.5)
+        )
+    ]
+    if os.getenv("REMOVE_POSTPROCESSOR", None) is None:
+        app.node_postprocessors.append(
+            MetadataReplacementPostProcessor(target_metadata_key="extra_context")
+        )
     search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
+    search_tool.description = os.getenv("SEARCH_TOOL_DESCRIPTION", search_tool.description)
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
     tools = [
+        search_tool,
+        wikipedia_tool,
         Tool(
-            name=search_tool.name,
-            func=None,
-            coroutine=partial(
-                arun_qa_over_tool_output,
-                llm=llm,
-                tool=search_tool,
-            ),
-            description=search_tool.description,
-            return_direct=True,
-        ),
-        Tool(
-            name=wikipedia_tool.name,
-            func=None,
-            coroutine=partial(
-                arun_qa_over_tool_output,
-                llm=llm,
-                tool=wikipedia_tool,
-            ),
-            description=wikipedia_tool.description,
-            return_direct=True,
-        ),
-        Tool(
-            name="openbb_terminal",
+            name="OpenBB",
             func=None,
             coroutine=partial(
                 get_openbb_chat_output,
@@ -263,40 +252,47 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
     try:
         if use_agent:
             # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
-            output_str = await app.agent_executor.arun(query)
+            tool_execution_order_callback = ToolExecutionOrderCallback()
+            output_str = await app.agent_executor.arun(
+                query, callbacks=[tool_execution_order_callback]
+            )
+            tools_executed = tool_execution_order_callback.tools_used.copy()
+            output_str = add_context_to_output(output=output_str, tools_executed=tools_executed)
         else:
             # Run programmer. Useful with LLMs of less quality (e.g., smaller open source LLMs)
+            # Already includes openbb context
+            tools_executed = ["OpenBB"]
             output_str = await get_openbb_chat_output(
                 query_str=query,
                 auto_llama_index=app.auto_llama_index,
                 node_postprocessors=app.node_postprocessors,
             )
-        agent_output_str = run_repl_over_openbb(
-            openbb_chat_output=output_str,
-            python_repl_utility=app.python_repl_utility,
-            openbb_pat=openbb_pat,
-        )
-        try:
-            if "```json" in agent_output_str:
-                result_data_str = agent_output_str.split("```json")[1].split("```")[0].strip()
-                result_data = json.loads(result_data_str)
-                body_data_str = agent_output_str.split("```json")[0].strip()
+        if "OpenBB" in tools_executed:
+            output_str = run_repl_over_openbb(
+                openbb_chat_output=output_str,
+                python_repl_utility=app.python_repl_utility,
+                openbb_pat=openbb_pat,
+            )
+            if "```json" in output_str:
+                try:
+                    result_data_str = output_str.split("```json")[1].split("```")[0].strip()
+                    result_data = json.loads(result_data_str)
+                    body_data_str = output_str.split("```json")[0].strip()
 
-                return {
-                    "type": "data",
-                    "result_data": result_data,
-                    "body": body_data_str,
-                }
-            else:
-                return {
-                    "type": "data",
-                    "body": agent_output_str,
-                }
-        except Exception as e:
-            return {
-                "type": "data",
-                "body": agent_output_str,
-            }
+                    return {
+                        "type": "data",
+                        "result_data": result_data,
+                        "body": body_data_str,
+                    }
+                except Exception as e:
+                    return {
+                        "type": "data",
+                        "body": output_str,
+                    }
+        return {
+            "type": "data",
+            "body": output_str,
+        }
     except Exception as e:
         print(e)
         return {"type": "error", "body": "Sorry, something went wrong!"}

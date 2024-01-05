@@ -153,9 +153,8 @@ def fix_frequent_code_errors(prev_code: str, openbb_pat: Optional[str] = None) -
 def run_repl_over_openbb(
     openbb_chat_output: str, python_repl_utility: PythonREPL, openbb_pat: Optional[str] = None
 ) -> str:
-    if openbb_chat_output.startswith(">") or "```python" not in openbb_chat_output:
-        # already in final response format with context provider added
-        # or no code available to execute
+    if "```python" not in openbb_chat_output:
+        # no code available to execute
         return openbb_chat_output
     code_str = (
         openbb_chat_output.split("```python")[1].split("```")[0]
