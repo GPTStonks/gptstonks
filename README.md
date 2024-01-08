@@ -36,6 +36,7 @@ Welcome to the GPTStonks Chatbot API documentation! This API allows you to inter
   - [Supported Embeddings Providers](#supported-embeddings-providers)
   - [Getting Started 🛠️](#getting-started-%EF%B8%8F)
     - [Prerequisites](#prerequisites)
+    - [Full deployment \[api + frontend + db\] (recommended)](#full-deployment-api--frontend--db-recommended)
     - [Installation 🛸](#installation-)
   - [For Production Environments 🏭](#for-production-environments-)
   - [Usage💡](#usage)
@@ -78,6 +79,26 @@ This API allows you to integrate the GPTStonks financial chatbot into your proje
 ### Prerequisites
 
 Before you begin, make sure you have [Docker](https://docs.docker.com/engine/install/) installed on your system.
+
+### Full deployment \[api + frontend + db\] (recommended)
+
+1. Clone this repository to your local machine:
+
+```bash
+git clone https://github.com/gptstonks/api.git
+```
+
+2. Check the `.env.template` file for the required environment variables. Modify the values as desired and save the file.
+
+3. Run the docker-compose file:
+
+```bash
+docker-compose up
+```
+
+4. If you didn't change any port configuration, navigate to `http://localhost:3000` to access the frontend.
+
+5. (optional) If you want to use your `OpenBB` PAT to access resources, you can set it from the API Keys section (sidebar) in the frontend.
 
 ### Installation 🛸
 
