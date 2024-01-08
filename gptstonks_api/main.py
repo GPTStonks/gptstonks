@@ -36,6 +36,8 @@ from .utils import (
     get_openbb_chat_output,
     run_repl_over_openbb,
 )
+from pymongo import MongoClient
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -85,6 +87,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+################# DATABASE #################
+
+try:
+    client = MongoClient(os.getenv("MONGO_URI"))
+    db = client[os.getenv("MONGO_DBNAME")]
+    print("Connected to MongoDB")
+
+except Exception as e:
+    print(f"Error: {e}")
+    print("Could not connect to MongoDB")
+
+################# ENDPOINTS #################
 
 @app.on_event("startup")
 def init_data():
@@ -236,7 +250,7 @@ async def process_query_async(request: Request):
     return await run_model_in_background(query, use_agent, openbb_pat)
 
 
-async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str | None) -> dict:
+async def run_model_in_background(query: str, use_agent: bool) -> dict:
     """Background task to process the query using the `langchain` agent.
 
     Args:
@@ -250,6 +264,8 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
     """
 
     try:
+        openbb_pat = str(db.tokens.find_one({}, {"_id": 0, "openbb": 1})["openbb"]) # Retrieve OpenBB PAT from database
+        print(f"Token: {openbb_pat}")
         if use_agent:
             # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
             tool_execution_order_callback = ToolExecutionOrderCallback()
@@ -297,12 +313,33 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
         print(e)
         return {"type": "error", "body": "Sorry, something went wrong!"}
 
+############## DATABASE ##############
+class TokenData(BaseModel):
+    openbb: str
 
-@app.get("/get_api_keys")
-async def get_api_keys():
-    raise NotImplementedError("Keys are not stored, they are accessed using the PAT on-the-fly")
+@app.post("/tokens/")
+async def update_token(token_data: TokenData):
+    """
+    Update the token used to access OpenBB.
 
+    Args:
+        token_data (TokenData): Token data.
 
-@app.post("/set_api_keys")
-async def set_api_keys(request: Request):
-    raise NotImplementedError("Keys are not stored, they are accessed using the PAT on-the-fly")
+    Returns:
+        dict: Response to the query.
+
+    """
+    db.tokens.update_one({}, {"$set": token_data.dict()}, upsert=True)
+    return {"message": "Token updated"}
+
+@app.get("/tokens/")
+async def get_token():
+    """
+    Get the token used to access OpenBB.
+
+    Returns:
+        dict: Response to the query.
+
+    """
+    token = db.tokens.find_one({}, {"_id": 0, "openbb": 1})
+    return token if token else {"openbb": ""}
