@@ -27,17 +27,17 @@ from llama_index.postprocessor import (
 from openbb import obb
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_chat.llms.chat_model_llm_iface import ChatModelWithLLMIface
+from pymongo import MongoClient
 
 from .callbacks import ToolExecutionOrderCallback
 from .explicability import add_context_to_output
+from .models import TokenData
 from .utils import (
     arun_qa_over_tool_output,
     fix_frequent_code_errors,
     get_openbb_chat_output,
     run_repl_over_openbb,
 )
-from pymongo import MongoClient
-from pydantic import BaseModel
 
 load_dotenv()
 
@@ -87,8 +87,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-################# DATABASE #################
-
 try:
     client = MongoClient(os.getenv("MONGO_URI"))
     db = client[os.getenv("MONGO_DBNAME")]
@@ -98,7 +96,6 @@ except Exception as e:
     print(f"Error: {e}")
     print("Could not connect to MongoDB")
 
-################# ENDPOINTS #################
 
 @app.on_event("startup")
 def init_data():
@@ -245,9 +242,8 @@ async def process_query_async(request: Request):
     data = await request.json()
     query = data.get("query")
     use_agent = data.get("use_agent", False)
-    openbb_pat = data.get("openbb_pat")
 
-    return await run_model_in_background(query, use_agent, openbb_pat)
+    return await run_model_in_background(query, use_agent)
 
 
 async def run_model_in_background(query: str, use_agent: bool) -> dict:
@@ -264,7 +260,10 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
     """
 
     try:
-        openbb_pat = str(db.tokens.find_one({}, {"_id": 0, "openbb": 1})["openbb"]) # Retrieve OpenBB PAT from database
+        openbb_pat_mongo = db.tokens.find_one({}, {"_id": 0, "openbb": 1}).get("openbb")
+        openbb_pat = (
+            str(openbb_pat_mongo) if openbb_pat_mongo is not None else openbb_pat_mongo
+        )  # Retrieve OpenBB PAT from database
         print(f"Token: {openbb_pat}")
         if use_agent:
             # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
@@ -313,33 +312,27 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
         print(e)
         return {"type": "error", "body": "Sorry, something went wrong!"}
 
-############## DATABASE ##############
-class TokenData(BaseModel):
-    openbb: str
 
 @app.post("/tokens/")
 async def update_token(token_data: TokenData):
-    """
-    Update the token used to access OpenBB.
+    """Update the token used to access OpenBB.
 
     Args:
         token_data (TokenData): Token data.
 
     Returns:
         dict: Response to the query.
-
     """
     db.tokens.update_one({}, {"$set": token_data.dict()}, upsert=True)
     return {"message": "Token updated"}
 
+
 @app.get("/tokens/")
 async def get_token():
-    """
-    Get the token used to access OpenBB.
+    """Get the token used to access OpenBB.
 
     Returns:
         dict: Response to the query.
-
     """
     token = db.tokens.find_one({}, {"_id": 0, "openbb": 1})
     return token if token else {"openbb": ""}
