@@ -104,13 +104,13 @@ def init_data():
     if os.getenv("DEBUG_API") is not None:
         set_debug(True)
 
-    vsi_path = os.getenv("VSI_PATH").split(":")[-1]
+    vsi_path = os.getenv("AUTOLLAMAINDEX_VSI_PATH").split(":")[-1]
     if not os.path.exists(vsi_path):
-        gdown.download_folder(os.getenv("VSI_GDRIVE_URI"), output=vsi_path)
+        gdown.download_folder(os.getenv("AUTOLLAMAINDEX_VSI_GDRIVE_URI"), output=vsi_path)
     else:
         print(f"{vsi_path} already exists, assuming it was already downloaded")
 
-    embed_model = os.getenv("EMBEDDING_MODEL_ID", "local:BAAI/bge-large-en-v1.5")
+    embed_model = os.getenv("AUTOLLAMAINDEX_EMBEDDING_MODEL_ID", "local:BAAI/bge-large-en-v1.5")
     if embed_model == "default":
         embed_model = OpenAIEmbedding(
             model=OpenAIEmbeddingModelType.TEXT_EMBED_ADA_002,
@@ -169,15 +169,16 @@ def init_data():
 
     # Load AutoLlamaIndex
     app.auto_llama_index = AutoLlamaIndex(
-        path=os.getenv("VSI_PATH"),
+        path=os.getenv("AUTOLLAMAINDEX_VSI_PATH"),
         embedding_model_id=embed_model,
         llm_model=llamaindex_llm,
-        context_window=int(os.getenv("LLM_CONTEXT_WINDOW", 4096)),
-        qa_template_str=os.getenv("QA_TEMPLATE", None),
-        refine_template_str=os.getenv("REFINE_TEMPLATE", None),
+        context_window=int(os.getenv("AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW", 4096)),
+        qa_template_str=os.getenv("AUTOLLAMAINDEX_QA_TEMPLATE", None),
+        refine_template_str=os.getenv("AUTOLLAMAINDEX_REFINE_TEMPLATE", None),
         other_llama_index_vector_index_retriever_kwargs={
-            "similarity_top_k": int(os.getenv("VIR_SIMILARITY_TOP_K", 3))
+            "similarity_top_k": int(os.getenv("AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K", 3))
         },
+        use_hybrid_retriever=(not os.getenv("AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER")),
     )
 
     # Create agent
@@ -186,10 +187,10 @@ def init_data():
     app.python_repl_utility.globals = globals()
     app.node_postprocessors = [
         SimilarityPostprocessor(
-            similarity_cutoff=os.getenv("SIMILARITY_POSTPROCESSOR_CUTOFF", 0.5)
+            similarity_cutoff=os.getenv("AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF", 0.5)
         )
     ]
-    if os.getenv("REMOVE_POSTPROCESSOR", None) is None:
+    if not os.getenv("AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR"):
         app.node_postprocessors.append(
             MetadataReplacementPostProcessor(target_metadata_key="extra_context")
         )
