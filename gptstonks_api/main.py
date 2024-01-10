@@ -87,15 +87,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-try:
-    client = MongoClient(os.getenv("MONGO_URI"))
-    db = client[os.getenv("MONGO_DBNAME")]
-    print("Connected to MongoDB")
-
-except Exception as e:
-    print(f"Error: {e}")
-    print("Could not connect to MongoDB")
-
 
 @app.on_event("startup")
 def init_data():
@@ -103,6 +94,14 @@ def init_data():
 
     if os.getenv("DEBUG_API") is not None:
         set_debug(True)
+
+    try:
+        client = MongoClient(os.getenv("MONGO_URI"))
+        app.db = client[os.getenv("MONGO_DBNAME")]
+        print("Connected to MongoDB")
+    except Exception as e:
+        print(f"Error: {e}")
+        print("Could not connect to MongoDB")
 
     vsi_path = os.getenv("AUTOLLAMAINDEX_VSI_PATH").split(":")[-1]
     if not os.path.exists(vsi_path):
@@ -261,7 +260,7 @@ async def run_model_in_background(query: str, use_agent: bool) -> dict:
     """
 
     try:
-        openbb_pat_mongo = db.tokens.find_one({}, {"_id": 0, "openbb": 1}).get("openbb")
+        openbb_pat_mongo = app.db.tokens.find_one({}, {"_id": 0, "openbb": 1}).get("openbb")
         openbb_pat = (
             str(openbb_pat_mongo) if openbb_pat_mongo is not None else openbb_pat_mongo
         )  # Retrieve OpenBB PAT from database
@@ -324,7 +323,7 @@ async def update_token(token_data: TokenData):
     Returns:
         dict: Response to the query.
     """
-    db.tokens.update_one({}, {"$set": token_data.dict()}, upsert=True)
+    app.db.tokens.update_one({}, {"$set": token_data.dict()}, upsert=True)
     return {"message": "Token updated"}
 
 
@@ -335,5 +334,5 @@ async def get_token():
     Returns:
         dict: Response to the query.
     """
-    token = db.tokens.find_one({}, {"_id": 0, "openbb": 1})
+    token = app.db.tokens.find_one({}, {"_id": 0, "openbb": 1})
     return token if token else {"openbb": ""}
