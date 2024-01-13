@@ -11,7 +11,7 @@ RUN apt-get update && \
 COPY ./pyproject.toml /api/pyproject.toml
 COPY ./pdm.lock /api/pdm.lock
 WORKDIR /api
-RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.10.0 && \
+RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.11.2 && \
     pdm install --no-editable --no-self && \
     pdm cache clear
 ENV PATH="/api/.venv/bin:$PATH"

@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gptstonks_api:1.0
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.template
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.front
+    image: gptstonks_frontend:1.0
+    ports:
+      - "3000:80"
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=mongodb
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
+volumes:
+  mongo-data:

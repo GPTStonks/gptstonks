@@ -27,9 +27,11 @@ from llama_index.postprocessor import (
 from openbb import obb
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_chat.llms.chat_model_llm_iface import ChatModelWithLLMIface
+from pymongo import MongoClient
 
 from .callbacks import ToolExecutionOrderCallback
 from .explicability import add_context_to_output
+from .models import TokenData
 from .utils import (
     arun_qa_over_tool_output,
     fix_frequent_code_errors,
@@ -93,13 +95,21 @@ def init_data():
     if os.getenv("DEBUG_API") is not None:
         set_debug(True)
 
-    vsi_path = os.getenv("VSI_PATH").split(":")[-1]
+    try:
+        client = MongoClient(os.getenv("MONGO_URI"))
+        app.db = client[os.getenv("MONGO_DBNAME")]
+        print("Connected to MongoDB")
+    except Exception as e:
+        print(f"Error: {e}")
+        print("Could not connect to MongoDB")
+
+    vsi_path = os.getenv("AUTOLLAMAINDEX_VSI_PATH").split(":")[-1]
     if not os.path.exists(vsi_path):
-        gdown.download_folder(os.getenv("VSI_GDRIVE_URI"), output=vsi_path)
+        gdown.download_folder(os.getenv("AUTOLLAMAINDEX_VSI_GDRIVE_URI"), output=vsi_path)
     else:
         print(f"{vsi_path} already exists, assuming it was already downloaded")
 
-    embed_model = os.getenv("EMBEDDING_MODEL_ID", "local:BAAI/bge-large-en-v1.5")
+    embed_model = os.getenv("AUTOLLAMAINDEX_EMBEDDING_MODEL_ID", "local:BAAI/bge-large-en-v1.5")
     if embed_model == "default":
         embed_model = OpenAIEmbedding(
             model=OpenAIEmbeddingModelType.TEXT_EMBED_ADA_002,
@@ -158,15 +168,16 @@ def init_data():
 
     # Load AutoLlamaIndex
     app.auto_llama_index = AutoLlamaIndex(
-        path=os.getenv("VSI_PATH"),
+        path=os.getenv("AUTOLLAMAINDEX_VSI_PATH"),
         embedding_model_id=embed_model,
         llm_model=llamaindex_llm,
-        context_window=int(os.getenv("LLM_CONTEXT_WINDOW", 4096)),
-        qa_template_str=os.getenv("QA_TEMPLATE", None),
-        refine_template_str=os.getenv("REFINE_TEMPLATE", None),
+        context_window=int(os.getenv("AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW", 4096)),
+        qa_template_str=os.getenv("AUTOLLAMAINDEX_QA_TEMPLATE", None),
+        refine_template_str=os.getenv("AUTOLLAMAINDEX_REFINE_TEMPLATE", None),
         other_llama_index_vector_index_retriever_kwargs={
-            "similarity_top_k": int(os.getenv("VIR_SIMILARITY_TOP_K", 3))
+            "similarity_top_k": int(os.getenv("AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K", 3))
         },
+        use_hybrid_retriever=(not os.getenv("AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER")),
     )
 
     # Create agent
@@ -175,10 +186,10 @@ def init_data():
     app.python_repl_utility.globals = globals()
     app.node_postprocessors = [
         SimilarityPostprocessor(
-            similarity_cutoff=os.getenv("SIMILARITY_POSTPROCESSOR_CUTOFF", 0.5)
+            similarity_cutoff=os.getenv("AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF", 0.5)
         )
     ]
-    if os.getenv("REMOVE_POSTPROCESSOR", None) is None:
+    if not os.getenv("AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR"):
         app.node_postprocessors.append(
             MetadataReplacementPostProcessor(target_metadata_key="extra_context")
         )
@@ -231,12 +242,11 @@ async def process_query_async(request: Request):
     data = await request.json()
     query = data.get("query")
     use_agent = data.get("use_agent", False)
-    openbb_pat = data.get("openbb_pat")
 
-    return await run_model_in_background(query, use_agent, openbb_pat)
+    return await run_model_in_background(query, use_agent)
 
 
-async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str | None) -> dict:
+async def run_model_in_background(query: str, use_agent: bool) -> dict:
     """Background task to process the query using the `langchain` agent.
 
     Args:
@@ -250,6 +260,11 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
     """
 
     try:
+        openbb_pat_mongo = app.db.tokens.find_one({}, {"_id": 0, "openbb": 1}).get("openbb")
+        openbb_pat = (
+            str(openbb_pat_mongo) if openbb_pat_mongo is not None else openbb_pat_mongo
+        )  # Retrieve OpenBB PAT from database
+        print(f"Token: {openbb_pat}")
         if use_agent:
             # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
             tool_execution_order_callback = ToolExecutionOrderCallback()
@@ -298,11 +313,26 @@ async def run_model_in_background(query: str, use_agent: bool, openbb_pat: str |
         return {"type": "error", "body": "Sorry, something went wrong!"}
 
 
-@app.get("/get_api_keys")
-async def get_api_keys():
-    raise NotImplementedError("Keys are not stored, they are accessed using the PAT on-the-fly")
+@app.post("/tokens/")
+async def update_token(token_data: TokenData):
+    """Update the token used to access OpenBB.
+
+    Args:
+        token_data (TokenData): Token data.
+
+    Returns:
+        dict: Response to the query.
+    """
+    app.db.tokens.update_one({}, {"$set": token_data.dict()}, upsert=True)
+    return {"message": "Token updated"}
 
 
-@app.post("/set_api_keys")
-async def set_api_keys(request: Request):
-    raise NotImplementedError("Keys are not stored, they are accessed using the PAT on-the-fly")
+@app.get("/tokens/")
+async def get_token():
+    """Get the token used to access OpenBB.
+
+    Returns:
+        dict: Response to the query.
+    """
+    token = app.db.tokens.find_one({}, {"_id": 0, "openbb": 1})
+    return token if token else {"openbb": ""}
