@@ -45,10 +45,6 @@ jobs:
       - name: Checkout repository to build machine
         uses: actions/checkout@v2
 
-      - name: Set tag as output variable
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
       - name: Log in to the ghcr.io
         uses: docker/login-action@v2
         with:
@@ -72,7 +68,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.vars.outputs.tag }}
+          tags: ${{ steps.meta_dockerhub.outputs.tags }}
           labels: ${{ steps.meta_ghcr.outputs.labels }}
 
   docker-build-hub:
@@ -111,10 +107,6 @@ jobs:
       - name: Checkout repository to build machine
         uses: actions/checkout@v2
 
-      - name: Set tag as output variable
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -133,5 +125,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.vars.outputs.tag }}
+          tags: ${{ steps.meta_dockerhub.outputs.tags }}
           labels: ${{ steps.meta_dockerhub.outputs.labels }}
