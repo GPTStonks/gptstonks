@@ -2,20 +2,16 @@ version: "3.8"
 
 services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: gptstonks_api:1.0
+    image: gptstonks/api:latest
     ports:
       - "8000:8000"
     env_file:
       - .env.template
+    volumes:
+      - ${LOCAL_LLM_PATH}:/api/gptstonks_api/zephyr-7b-beta.Q4_K_M.gguf
 
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.front
-    image: gptstonks_frontend:1.0
+    image: gptstonks/front-end:latest
     ports:
       - "3000:80"
 
