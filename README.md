@@ -2,6 +2,16 @@
   <img src="./assets/logo-chatbot.png" alt="Logo">
 </p>
 <p align="center">
+  <!-- X Badge -->
+  <a href="https://twitter.com/GPTStonks"><img src="https://img.shields.io/badge/follow_us-000000?style=for-the-badge&logo=x&logoColor=white" alt="X Follow Us Badge"></a>
+  <!-- Discord Badge -->
+  <a href="https://discord.gg/MyDDGuEd"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord Badge"></a>
+  <!-- Docker Badge -->
+  <a href="https://hub.docker.com/u/gptstonks">
+    <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Badge">
+  </a>
+</p>
+<p align="center">
   <!-- Hugging Face Badge -->
   <a href="https://huggingface.co/"><img src="https://img.shields.io/badge/Hugging%20Face-F58025?style=for-the-badge&logo=huggingface&logoColor=white" alt="Hugging Face Badge"></a>
   <!-- LangChain Badge -->
@@ -11,10 +21,6 @@
   <!-- FastAPI Badge -->
   <a href="https://fastapi.tiangolo.com/">
     <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI Badge">
-  </a>
-  <!-- Docker Badge -->
-  <a href="https://www.docker.com/">
-    <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Badge">
   </a>
   <!-- OpenBB Badge -->
   <a href="https://openbb.co/">
