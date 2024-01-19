@@ -8,15 +8,15 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, Tool, initialize_agent
-from langchain.chat_models import ChatOpenAI
 from langchain.globals import set_debug
-from langchain.llms import Bedrock, LlamaCpp, OpenAI, VertexAI
-from langchain.tools import DuckDuckGoSearchResults, WikipediaQueryRun
-from langchain.utilities import (
+from langchain_community.llms import Bedrock, LlamaCpp, OpenAI, VertexAI
+from langchain_community.tools import DuckDuckGoSearchResults, WikipediaQueryRun
+from langchain_community.utilities import (
     DuckDuckGoSearchAPIWrapper,
     PythonREPL,
     WikipediaAPIWrapper,
 )
+from langchain_openai import ChatOpenAI
 from llama_index.embeddings import OpenAIEmbedding
 from llama_index.embeddings.openai import OpenAIEmbeddingModelType
 from llama_index.llms import LangChainLLM
@@ -132,8 +132,9 @@ def init_data():
         if "instruct" in llm_model_name:
             llm = OpenAI(**llm_common_kwargs)
         else:
+            top_p = llm_common_kwargs.pop("top_p")
             llm = ChatModelWithLLMIface(
-                chat_model=ChatOpenAI(**llm_common_kwargs),
+                chat_model=ChatOpenAI(**llm_common_kwargs, model_kwargs={"top_p": top_p}),
                 system_message=os.getenv(
                     "LLM_CHAT_MODEL_SYSTEM_MESSAGE", "You write concise and complete answers."
                 ),

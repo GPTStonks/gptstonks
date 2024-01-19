@@ -6,7 +6,7 @@ import yfinance as yf
 from langchain.llms.base import BaseLLM
 from langchain.prompts import PromptTemplate
 from langchain.tools.base import BaseTool
-from langchain.utilities import PythonREPL
+from langchain_community.utilities import PythonREPL
 from llama_index.postprocessor.types import BaseNodePostprocessor
 from llama_index.prompts.default_prompts import DEFAULT_TEXT_QA_PROMPT_TMPL
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
