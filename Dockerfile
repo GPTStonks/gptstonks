@@ -19,9 +19,6 @@ ENV PATH="/api/.venv/bin:$PATH"
 # Build openbb. See https://docs.openbb.co/platform/installation#post-installation
 RUN python -c "import openbb; openbb.build()"
 
-# Copy __init__ in parent dir to enable relative imports
-COPY ./__init__.py /api/__init__.py
-
 # Copy FastAPI app
 COPY ./gptstonks_api /api/gptstonks_api
 WORKDIR /api/gptstonks_api

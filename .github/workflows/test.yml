@@ -33,7 +33,7 @@ jobs:
           pdm install --no-editable --no-self -G testing
 
       - name: Run pytest
-        run: .venv/bin/pytest -v
+        run: MONGO_DBNAME="mongodb" MONGO_URI="mongodb://localhost:27017" .venv/bin/pytest -v
 
   # upload code coverage report
   code-coverage:
@@ -59,7 +59,7 @@ jobs:
           pdm install --no-editable --no-self -G testing
 
       - name: Run tests and collect coverage
-        run: .venv/bin/pytest --cov gptstonks_api
+        run: MONGO_DBNAME="mongodb" MONGO_URI="mongodb://localhost:27017" .venv/bin/pytest --cov gptstonks_api
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
