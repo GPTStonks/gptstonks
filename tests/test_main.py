@@ -1,18 +1,24 @@
 from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
 
-from gptstonks_api.main import app
+from gptstonks_api.agent import run_agent_in_background
+from gptstonks_api.databases import db
+from gptstonks_api.initialization import init_api
+from gptstonks_api.main import app_data
 
-client = TestClient(app)
+# client = TestClient(app)
 
 
-def test_process_query_async():
-    result = client.post(
-        "/process_query_async", json={"query": "get the sentiment analysis of TSLA"}
-    )
-    result_json = result.json()
+@pytest.mark.asyncio
+async def test_run_model_bg():
+    try:
+        db.command("ping")
+    except Exception as e:
+        pytest.skip("No database to connect to. Test skipped")
+    init_api(app_data)
+    result_json = await run_agent_in_background("get the sentiment analysis of TSLA", app_data)
 
-    assert result.status_code == 200
     assert "type" in result_json
     assert "body" in result_json

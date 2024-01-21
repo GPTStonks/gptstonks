@@ -17,9 +17,6 @@ RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.10.0 && \
     pdm cache clear
 ENV PATH="/api/.venv/bin:$PATH"
 
-# Copy __init__ in parent dir to enable relative imports
-COPY ./__init__.py /api/__init__.py
-
 # Copy FastAPI app
 COPY ./gptstonks_api /api/gptstonks_api
 WORKDIR /api/gptstonks_api
