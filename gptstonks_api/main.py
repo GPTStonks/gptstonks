@@ -11,7 +11,7 @@ from .agent import run_agent_in_background
 from .auth_routers import tokens
 from .constants import API_DESCRIPTION
 from .initialization import init_api
-from .models import AppData
+from .models import AppData, BaseAgentResponse, DataAgentResponse, QueryIn
 
 app_data = AppData()
 
@@ -51,7 +51,9 @@ app.include_router(tokens.router)
 
 
 @app.post("/process_query_async")
-async def process_query_async(request: Request):
+async def process_query_async(
+    request: Request, query_in: QueryIn
+) -> BaseAgentResponse | DataAgentResponse:
     """Asynchronous endpoint to start processing the given query. The processing runs in the
     background and the result is eventually returned.
 
@@ -61,7 +63,4 @@ async def process_query_async(request: Request):
     Returns:
         dict: containing the response.
     """
-    data = await request.json()
-    query = data.get("query")
-
-    return await run_agent_in_background(query=query, app_data=app_data)
+    return await run_agent_in_background(query=query_in.query, app_data=app_data)

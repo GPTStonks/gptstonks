@@ -4,11 +4,13 @@ from ..callbacks import ToolExecutionOrderCallback
 from ..databases import db
 from ..explicability import add_context_to_output
 from ..initialization import init_api
-from ..models import AppData
+from ..models import AppData, BaseAgentResponse, DataAgentResponse
 from ..utils import run_repl_over_openbb
 
 
-async def run_agent_in_background(query: str, app_data: AppData) -> dict:
+async def run_agent_in_background(
+    query: str, app_data: AppData
+) -> BaseAgentResponse | DataAgentResponse:
     """Background task to process the query using the `langchain` agent.
 
     Args:
@@ -16,7 +18,7 @@ async def run_agent_in_background(query: str, app_data: AppData) -> dict:
         app_data (AppData): Objects needed to run the agent successfully.
 
     Returns:
-        dict: Response to the query.
+        BaseAgentResponse | DataAgentResponse: Response to the query.
     """
 
     try:
@@ -45,20 +47,12 @@ async def run_agent_in_background(query: str, app_data: AppData) -> dict:
                     result_data = json.loads(result_data_str)
                     body_data_str = output_str.split("```json")[0].strip()
 
-                    return {
-                        "type": "data",
-                        "result_data": result_data,
-                        "body": body_data_str,
-                    }
+                    return DataAgentResponse(
+                        type="data", result_data=result_data, body=body_data_str
+                    )
                 except Exception as e:
-                    return {
-                        "type": "data",
-                        "body": output_str,
-                    }
-        return {
-            "type": "data",
-            "body": output_str,
-        }
+                    return BaseAgentResponse(type="data", body=output_str)
+        return BaseAgentResponse(type="data", body=output_str)
     except Exception as e:
-        print(e)
-        return {"type": "error", "body": "Sorry, something went wrong!"}
+        print("Overall exception happened: " + e)
+        return BaseAgentResponse(type="error", body="Sorry, something went wrong!")
