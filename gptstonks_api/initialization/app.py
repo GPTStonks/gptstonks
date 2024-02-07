@@ -4,7 +4,13 @@ from functools import partial
 import gdown
 from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.globals import set_debug
-from langchain_community.llms import Bedrock, LlamaCpp, OpenAI, VertexAI
+from langchain_community.llms import (
+    Bedrock,
+    HuggingFacePipeline,
+    LlamaCpp,
+    OpenAI,
+    VertexAI,
+)
 from langchain_community.tools import DuckDuckGoSearchResults, WikipediaQueryRun
 from langchain_community.utilities import (
     DuckDuckGoSearchAPIWrapper,
@@ -25,6 +31,7 @@ from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_chat.llms.chat_model_llm_iface import ChatModelWithLLMIface
 from pymongo import MongoClient
 from pymongo.database import Database
+from transformers import GPTQConfig
 
 from ..constants import AI_PREFIX
 from ..databases import db
@@ -108,6 +115,26 @@ def load_llm_model() -> LLM:
             max_tokens=openai_common_kwargs["max_tokens"],
             top_p=openai_common_kwargs["top_p"],
             n_ctx=int(os.getenv("LLM_LLAMACPP_CONTEXT_WINDOW")),
+        )
+    elif model_provider == "hf":
+        return HuggingFacePipeline.from_model_id(
+            model_id=llm_model_name,
+            task="text-generation",
+            pipeline_kwargs={
+                "max_new_tokens": openai_common_kwargs["max_tokens"],
+            },
+            device=int(os.getenv("LLM_HF_DEVICE")),
+            model_kwargs={
+                "temperature": openai_common_kwargs["temperature"],
+                "top_p": openai_common_kwargs["top_p"],
+                "do_sample": not os.getenv("LLM_HF_DISABLE_SAMPLING"),
+                "device_map": os.getenv("LLM_HF_DEVICE_MAP"),
+                "quantization_config": GPTQConfig(
+                    bits=int(os.getenv("LLM_HF_GPTQ_BITS", 4)),
+                    disable_exllama=bool(os.getenv("LLM_HF_DISABLE_EXLLAMA", False)),
+                ),
+                "trust_remote_code": bool(os.getenv("LLM_HF_TRUST_REMOTE_CODE")),
+            },
         )
     else:
         raise NotImplementedError(f"Provider {model_provider} not implemented")

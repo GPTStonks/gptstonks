@@ -54,5 +54,5 @@ async def run_agent_in_background(
                     return BaseAgentResponse(type="data", body=output_str)
         return BaseAgentResponse(type="data", body=output_str)
     except Exception as e:
-        print("Overall exception happened: " + e)
+        print("Overall exception happened: " + str(e))
         return BaseAgentResponse(type="error", body="Sorry, something went wrong!")
