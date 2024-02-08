@@ -8,7 +8,7 @@ services:
     env_file:
       - .env.template
     volumes:
-      - ${LOCAL_LLM_PATH}:/api/gptstonks_api/zephyr-7b-beta.Q4_K_M.gguf
+      - ${LOCAL_LLM_PATH:-/dev/null}:/api/gptstonks_api/zephyr-7b-beta.Q4_K_M.gguf
 
   frontend:
     image: gptstonks/front-end:latest
