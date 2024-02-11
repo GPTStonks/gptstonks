@@ -47,6 +47,7 @@ Welcome to the GPTStonks Chatbot API documentation! This API allows you to inter
   - [For Production Environments 🏭](#for-production-environments-)
   - [Usage💡](#usage)
   - [API Endpoints🌐](#api-endpoints)
+  - [Configuration with environment variables ⚙️](#configuration-with-environment-variables-%EF%B8%8F)
   - [Contributing 🤝](#contributing-)
   - [License 📃](#license-)
 
@@ -190,6 +191,43 @@ To use the GPTStonks Financial Chatbot API, send HTTP requests to the provided e
 ## API Endpoints🌐
 
 Check `http://localhost:8000/docs` once the API is started to access the endpoints' documentation.
+
+## Configuration with environment variables ⚙️
+
+| Env variable                                   | Required | Default                                     | Description                                                                                           |
+| ---------------------------------------------- | -------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| MONGO_URI                                      | Yes      | -                                           | MongoDB's URI to connect.                                                                             |
+| MONGO_DBNAME                                   | Yes      | -                                           | MongoDB's database to use.                                                                            |
+| AUTOLLAMAINDEX_VSI_GDRIVE_URI                  | No       | None (Not downloaded)                       | Google Drive's URL to download Vector Store Index (VSI).                                              |
+| AUTOLLAMAINDEX_EMBEDDING_MODEL_ID              | No       | "local:BAAI/bge-large-en-v1.5"              | Embedding model ID to use with AutoLlamaIndex (must match with VSI).                                  |
+| AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF | No       | 0.5                                         | Minimum similarity required when retrieving similar documents.                                        |
+| AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR   | No       | None (Postprocessor used)                   | Whether or not to use a metadata postprocessor.                                                       |
+| AUTOLLAMAINDEX_VSI_PATH                        | Yes      | -                                           | Path to the downloaded VSI. If AUTOLLAMAINDEX_VSI_GDRIVE_URI is given, they will match automatically. |
+| AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW              | No       | 4096                                        | Context window to use when a Hugging Face model is loaded in AutoLlamaIndex.                          |
+| AUTOLLAMAINDEX_QA_TEMPLATE                     | No       | None (LlamaIndex's Default QA Template)     | Template to use with LlamaIndex question answering step.                                              |
+| AUTOLLAMAINDEX_REFINE_TEMPLATE                 | No       | None (LlamaIndex's Default Refine Template) | Template to use with AutoLlamaIndex refine step.                                                      |
+| AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K            | No       | 3                                           | K most similar elements are retrieved with vector search.                                             |
+| AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER        | No       | None (Hybrid retrieved used)                | Whether or not to use BM25 with vector search (hybrid) or only vector search.                         |
+| AGENT_REQUEST_TIMEOUT                          | No       | 20                                          | No. seconds to wait before timeout when an API LLM is used (e.g., OpenAI).                            |
+| AGENT_EARLY_STOPPING_METHOD                    | No       | "generate"                                  | How the model should return its final output when early stopping is applied.                          |
+| LLM_TEMPERATURE                                | No       | 0.1                                         | Temperature to use when sampling.                                                                     |
+| LLM_MAX_TOKENS                                 | No       | 256                                         | No. max. tokens to sample.                                                                            |
+| LLM_TOP_P                                      | No       | 1.0                                         | Top-p parameter to apply when sampling.                                                               |
+| LLM_MODEL_ID                                   | Yes      | -                                           | ID of the model to use. See tutorials in GPTStonks' blog for more details.                            |
+| LLM_CHAT_MODEL_SYSTEM_MESSAGE                  | No       | "You write concise and complete answers."   | System message when using chat models (e.g., GPT-4).                                                  |
+| LLM_VERTEXAI_CLOUD_LOCATION                    | No       | None                                        | Google Cloud location to use with VertexAI.                                                           |
+| LLM_LLAMACPP_CONTEXT_WINDOW                    | No       | 4000                                        | Context window to apply when a model is loaded with Llama.cpp.                                        |
+| LLM_HF_DEVICE                                  | No       | -1                                          | Device to use with Hugging Face's models.                                                             |
+| LLM_HF_DISABLE_SAMPLING                        | No       | False                                       | Whether or not to disable sampling when generating with Hugging Face's models.                        |
+| LLM_HF_DEVICE_MAP                              | No       | None (HuggingFacePipeline default)          | Device map to use with Hugging Face's models.                                                         |
+| LLM_HF_BITS                                    | No       | 4                                           | No. bits of quantized Hugging Face's model.                                                           |
+| LLM_HF_DISABLE_EXLLAMA                         | No       | False                                       | Whether or not to disable ExLlama with Hugging Face's models.                                         |
+| LLM_HF_TRUST_REMOTE_CODE                       | No       | False                                       | Whether or not to trust remote code with Hugging Face's models.                                       |
+| OPENBBCHAT_TOOL_DESCRIPTION                    | Yes      | -                                           | OpenBB Platform's tool description for the LLM agent.                                                 |
+| SEARCH_TOOL_DESCRIPTION                        | No       | None (Default DDG Search description)       | DDG's search tool description for the LLM agent.                                                      |
+| CUSTOM_GPTSTONKS_PREFIX                        | No       | None (Default LangChain agent prefix)       | Prefix to use with LLM agent.                                                                         |
+| CUSTOM_GPTSTONKS_SUFFIX                        | No       | None (Default LangChain agent suffix)       | Suffix to use with LLm agent.                                                                         |
+| CUSTOM_GPTSTONKS_QA (DEPRECATED)               | No       | None (LlamaIndex's Default QA Template)     | QA template to use with LLM agent QA tools.                                                           |
 
 ## Contributing 🤝
 

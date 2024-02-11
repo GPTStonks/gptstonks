@@ -33,14 +33,46 @@ from pymongo import MongoClient
 from pymongo.database import Database
 from transformers import GPTQConfig
 
-from ..constants import AI_PREFIX
+from ..constants import (
+    AGENT_EARLY_STOPPING_METHOD,
+    AGENT_REQUEST_TIMEOUT,
+    AI_PREFIX,
+    AUTOLLAMAINDEX_EMBEDDING_MODEL_ID,
+    AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
+    AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER,
+    AUTOLLAMAINDEX_QA_TEMPLATE,
+    AUTOLLAMAINDEX_REFINE_TEMPLATE,
+    AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR,
+    AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF,
+    AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
+    AUTOLLAMAINDEX_VSI_GDRIVE_URI,
+    AUTOLLAMAINDEX_VSI_PATH,
+    CUSTOM_GPTSTONKS_PREFIX,
+    CUSTOM_GPTSTONKS_SUFFIX,
+    DEBUG_API,
+    LLM_CHAT_MODEL_SYSTEM_MESSAGE,
+    LLM_HF_BITS,
+    LLM_HF_DEVICE,
+    LLM_HF_DEVICE_MAP,
+    LLM_HF_DISABLE_EXLLAMA,
+    LLM_HF_DISABLE_SAMPLING,
+    LLM_HF_TRUST_REMOTE_CODE,
+    LLM_LLAMACPP_CONTEXT_WINDOW,
+    LLM_MAX_TOKENS,
+    LLM_MODEL_ID,
+    LLM_TEMPERATURE,
+    LLM_TOP_P,
+    LLM_VERTEXAI_CLOUD_LOCATION,
+    OPENBBCHAT_TOOL_DESCRIPTION,
+    SEARCH_TOOL_DESCRIPTION,
+)
 from ..databases import db
 from ..models import AppData
 from ..utils import get_openbb_chat_output
 
 
 def set_api_debug():
-    if os.getenv("DEBUG_API") is not None:
+    if DEBUG_API is not None:
         set_debug(True)
 
 
@@ -48,7 +80,7 @@ def download_vsi(vsi_path: str):
     """Download Vector Store Index (VSI) if necessary."""
 
     if not os.path.exists(vsi_path):
-        gdown.download_folder(os.getenv("AUTOLLAMAINDEX_VSI_GDRIVE_URI"), output=vsi_path)
+        gdown.download_folder(AUTOLLAMAINDEX_VSI_GDRIVE_URI, output=vsi_path)
     else:
         print(f"{vsi_path} already exists, assuming it was already downloaded")
 
@@ -56,31 +88,28 @@ def download_vsi(vsi_path: str):
 def load_embed_model() -> str | OpenAIEmbedding:
     """Get LlamaIndex embedding model."""
 
-    embed_model = os.getenv("AUTOLLAMAINDEX_EMBEDDING_MODEL_ID", "local:BAAI/bge-large-en-v1.5")
-    if embed_model == "default":
-        embed_model = OpenAIEmbedding(
+    if AUTOLLAMAINDEX_EMBEDDING_MODEL_ID == "default":
+        return OpenAIEmbedding(
             model=OpenAIEmbeddingModelType.TEXT_EMBED_ADA_002,
-            timeout=float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
+            timeout=AGENT_REQUEST_TIMEOUT,
         )
-    return embed_model
+    return AUTOLLAMAINDEX_EMBEDDING_MODEL_ID
 
 
 def create_openai_common_kwargs(llm_model_name: str) -> dict:
     return {
         "model_name": llm_model_name,
-        "temperature": float(os.getenv("LLM_TEMPERATURE", 0.1)),
-        "request_timeout": float(os.getenv("AGENT_REQUEST_TIMEOUT", 20)),
-        "max_tokens": int(os.getenv("LLM_MAX_TOKENS", 256)),
-        "top_p": float(os.getenv("LLM_TOP_P", 1.0)),
+        "temperature": LLM_TEMPERATURE,
+        "request_timeout": AGENT_REQUEST_TIMEOUT,
+        "max_tokens": LLM_MAX_TOKENS,
+        "top_p": LLM_TOP_P,
     }
 
 
 def load_llm_model() -> LLM:
     """Initialize the Langchain LLM to use."""
 
-    model_provider, llm_model_name = os.getenv(
-        "LLM_MODEL_ID", "bedrock:anthropic.claude-instant-v1"
-    ).split(":")
+    model_provider, llm_model_name = LLM_MODEL_ID.split(":")
     openai_common_kwargs = create_openai_common_kwargs(llm_model_name)
     if model_provider == "openai":
         if "instruct" in llm_model_name:
@@ -89,9 +118,7 @@ def load_llm_model() -> LLM:
             top_p = openai_common_kwargs.pop("top_p")
             return ChatModelWithLLMIface(
                 chat_model=ChatOpenAI(**openai_common_kwargs, model_kwargs={"top_p": top_p}),
-                system_message=os.getenv(
-                    "LLM_CHAT_MODEL_SYSTEM_MESSAGE", "You write concise and complete answers."
-                ),
+                system_message=LLM_CHAT_MODEL_SYSTEM_MESSAGE,
             )
     elif model_provider == "anyscale":
         raise NotImplementedError("Anyscale does not support yet async API in langchain")
@@ -107,14 +134,14 @@ def load_llm_model() -> LLM:
         )
     elif model_provider == "vertexai":
         openai_common_kwargs["max_output_tokens"] = openai_common_kwargs.pop("max_tokens")
-        return VertexAI(location=os.getenv("LLM_CLOUD_LOCATION"), **openai_common_kwargs)
+        return VertexAI(location=LLM_VERTEXAI_CLOUD_LOCATION, **openai_common_kwargs)
     elif model_provider == "llamacpp":
         return LlamaCpp(
             model_path=llm_model_name,
             temperature=openai_common_kwargs["temperature"],
             max_tokens=openai_common_kwargs["max_tokens"],
             top_p=openai_common_kwargs["top_p"],
-            n_ctx=int(os.getenv("LLM_LLAMACPP_CONTEXT_WINDOW")),
+            n_ctx=LLM_LLAMACPP_CONTEXT_WINDOW,
         )
     elif model_provider == "hf":
         return HuggingFacePipeline.from_model_id(
@@ -123,17 +150,17 @@ def load_llm_model() -> LLM:
             pipeline_kwargs={
                 "max_new_tokens": openai_common_kwargs["max_tokens"],
             },
-            device=int(os.getenv("LLM_HF_DEVICE")),
+            device=LLM_HF_DEVICE,
             model_kwargs={
                 "temperature": openai_common_kwargs["temperature"],
                 "top_p": openai_common_kwargs["top_p"],
-                "do_sample": not os.getenv("LLM_HF_DISABLE_SAMPLING"),
-                "device_map": os.getenv("LLM_HF_DEVICE_MAP"),
+                "do_sample": not LLM_HF_DISABLE_SAMPLING,
+                "device_map": LLM_HF_DEVICE_MAP,
                 "quantization_config": GPTQConfig(
-                    bits=int(os.getenv("LLM_HF_GPTQ_BITS", 4)),
-                    disable_exllama=bool(os.getenv("LLM_HF_DISABLE_EXLLAMA", False)),
+                    bits=LLM_HF_BITS,
+                    disable_exllama=LLM_HF_DISABLE_EXLLAMA,
                 ),
-                "trust_remote_code": bool(os.getenv("LLM_HF_TRUST_REMOTE_CODE")),
+                "trust_remote_code": LLM_HF_TRUST_REMOTE_CODE,
             },
         )
     else:
@@ -154,23 +181,21 @@ def init_openbb_async_tool(
             auto_llama_index=auto_llama_index,
             node_postprocessors=node_postprocessors,
         ),
-        description=os.getenv("OPENBBCHAT_TOOL_DESCRIPTION"),
+        description=OPENBBCHAT_TOOL_DESCRIPTION,
         return_direct=return_direct,
     )
 
 
 def init_agent_tools(auto_llama_index: AutoLlamaIndex) -> list:
     node_postprocessors = [
-        SimilarityPostprocessor(
-            similarity_cutoff=os.getenv("AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF", 0.5)
-        )
+        SimilarityPostprocessor(similarity_cutoff=AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF)
     ]
-    if not os.getenv("AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR"):
+    if not AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR:
         node_postprocessors.append(
             MetadataReplacementPostProcessor(target_metadata_key="extra_context")
         )
     search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
-    search_tool.description = os.getenv("SEARCH_TOOL_DESCRIPTION", search_tool.description)
+    search_tool.description = SEARCH_TOOL_DESCRIPTION or search_tool.description
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
     return [
         search_tool,
@@ -186,7 +211,7 @@ def init_api(app_data: AppData):
 
     set_api_debug()
 
-    vsi_path = os.getenv("AUTOLLAMAINDEX_VSI_PATH").split(":")[-1]
+    vsi_path = AUTOLLAMAINDEX_VSI_PATH.split(":")[-1]
     download_vsi(vsi_path=vsi_path)
 
     embed_model = load_embed_model()
@@ -198,16 +223,16 @@ def init_api(app_data: AppData):
 
     # Load AutoLlamaIndex
     auto_llama_index = AutoLlamaIndex(
-        path=os.getenv("AUTOLLAMAINDEX_VSI_PATH"),
+        path=AUTOLLAMAINDEX_VSI_PATH,
         embedding_model_id=embed_model,
         llm_model=llamaindex_llm,
-        context_window=int(os.getenv("AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW", 4096)),
-        qa_template_str=os.getenv("AUTOLLAMAINDEX_QA_TEMPLATE", None),
-        refine_template_str=os.getenv("AUTOLLAMAINDEX_REFINE_TEMPLATE", None),
+        context_window=AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
+        qa_template_str=AUTOLLAMAINDEX_QA_TEMPLATE,
+        refine_template_str=AUTOLLAMAINDEX_REFINE_TEMPLATE,
         other_llama_index_vector_index_retriever_kwargs={
-            "similarity_top_k": int(os.getenv("AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K", 3))
+            "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K
         },
-        use_hybrid_retriever=(not os.getenv("AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER")),
+        use_hybrid_retriever=(not AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER),
     )
     # REPL to execute code
     app_data.python_repl_utility = PythonREPL()
@@ -221,11 +246,11 @@ def init_api(app_data: AppData):
         verbose=True,
         return_intermediate_steps=False,
         max_iterations=2,
-        early_stopping_method=os.getenv("AGENT_EARLY_STOPPING_METHOD", "generate"),
+        early_stopping_method=AGENT_EARLY_STOPPING_METHOD,
         agent_kwargs={
             "ai_prefix": AI_PREFIX,
-            "prefix": os.getenv("CUSTOM_GPTSTONKS_PREFIX"),
-            "suffix": os.getenv("CUSTOM_GPTSTONKS_SUFFIX"),
+            "prefix": CUSTOM_GPTSTONKS_PREFIX,
+            "suffix": CUSTOM_GPTSTONKS_SUFFIX,
             "input_variables": ["input", "agent_scratchpad"],
         },
     )
