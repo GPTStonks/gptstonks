@@ -1,4 +1,3 @@
-import os
 from typing import List, Optional
 from urllib.error import HTTPError
 
@@ -8,9 +7,10 @@ from langchain.prompts import PromptTemplate
 from langchain.tools.base import BaseTool
 from langchain_community.utilities import PythonREPL
 from llama_index.postprocessor.types import BaseNodePostprocessor
-from llama_index.prompts.default_prompts import DEFAULT_TEXT_QA_PROMPT_TMPL
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from requests.exceptions import ReadTimeout
+
+from ..constants import CUSTOM_GPTSTONKS_QA
 
 
 async def get_openbb_chat_output(
@@ -91,7 +91,7 @@ def run_qa_over_tool_output(tool_input: str | dict, llm: BaseLLM, tool: BaseTool
     tool_output: str = tool.run(tool_input)
     model_prompt: str = PromptTemplate(
         input_variables=["context_str", "query_str"],
-        template=os.getenv("CUSTOM_GPTSTONKS_QA", DEFAULT_TEXT_QA_PROMPT_TMPL),
+        template=CUSTOM_GPTSTONKS_QA,
     ).format(query_str=tool_input, context_str=tool_output)
     answer: str = llm(model_prompt)
 
@@ -104,7 +104,7 @@ async def arun_qa_over_tool_output(
     tool_output: str = await tool.arun(tool_input)
     model_prompt = PromptTemplate(
         input_variables=["context_str", "query_str"],
-        template=os.getenv("CUSTOM_GPTSTONKS_QA", DEFAULT_TEXT_QA_PROMPT_TMPL),
+        template=CUSTOM_GPTSTONKS_QA,
     )
     if original_query is not None:
         answer: str = await llm.apredict(
