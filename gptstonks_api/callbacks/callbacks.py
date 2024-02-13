@@ -10,6 +10,8 @@ from pydantic import BaseModel, computed_field
 
 
 class ToolExecutionOrderCallback(BaseModel, AsyncCallbackHandler):
+    """Callback to get the agent's tool execution order."""
+
     tools_used: list[str] = []
 
     async def on_agent_action(
@@ -25,6 +27,8 @@ class ToolExecutionOrderCallback(BaseModel, AsyncCallbackHandler):
 
 
 class LLMTimeCallback(BaseModel, AsyncCallbackHandler):
+    """Callback to get the agent's LLM execution times."""
+
     _last_start_time: float | None = None
     llm_executions_times_ns: list[float] = []
 

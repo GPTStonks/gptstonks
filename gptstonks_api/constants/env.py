@@ -1,3 +1,11 @@
+"""## Constants defined via environment variables.
+
+If the constant is defined with environ it means it is required, as it will returned an error if not provided.
+
+/// tip | List of env variables
+The list of env variables is provided in [Configuration with environment variables ⚙️](/api/#configuration-with-environment-variables).
+///
+"""
 import os
 
 from llama_index.prompts.default_prompts import DEFAULT_TEXT_QA_PROMPT_TMPL

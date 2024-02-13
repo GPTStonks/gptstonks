@@ -18,6 +18,7 @@ app_data = AppData()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Control the FastAPI lifecycle."""
     # Initialize everything
     init_api(app_data=app_data)
     yield
@@ -58,9 +59,10 @@ async def process_query_async(
     background and the result is eventually returned.
 
     Args:
-        request (Request): FastAPI request object containing the query to be processed.
+        request (`Request`): FastAPI request object containing the query to be processed.
+        query_in (`QueryIn`): validated query by the user.
 
     Returns:
-        dict: containing the response.
+        `BaseAgentResponse | DataAgentResponse`: the standard response by the API.
     """
     return await run_agent_in_background(query=query_in.query, app_data=app_data)
