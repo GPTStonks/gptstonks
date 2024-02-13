@@ -1,0 +1,194 @@
+site_name: GPTStonks API Documentation
+repo_url: https://github.com/gptstonks/api/
+site_url: https://gptstonks.github.io/api/
+repo_name: GPTStonks/api
+copyright: Copyright &copy; 2023 - 2024 Mitheithel, S.L.
+docs_dir: docs
+nav:
+  - Home: index.md
+  # defer to gen-files + literate-nav
+  - Reference: reference/
+  - Blog: https://docs.gptstonks.net/blog/
+theme:
+  name: material
+  custom_dir: mkdocs_overrides
+  logo: assets/favicon.png
+  features:
+    - announce.dismiss
+    # - content.action.edit
+    # - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    # - content.code.select
+    # - content.tabs.link
+    - content.tooltips
+    # - header.autohide
+    # - navigation.expand
+    - navigation.footer
+    # - navigation.indexes
+    - navigation.instant
+    # # - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    # # - navigation.tabs.sticky
+    # - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    # - toc.integrate
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+  font:
+    text: Fira Sans
+    code: Fira Code
+  favicon: assets/favicon.png
+  icon:
+    logo: logo
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - scripts/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - mkdocstrings
+  - minify:
+      minify_html: true
+  - git-revision-date-localized
+  - social
+  - privacy:
+      assets: false
+  - section-index
+
+# Additional CSS
+extra_css:
+  - stylesheets/banner.css
+
+# Additional configuration
+extra:
+  status:
+    new: Recently added
+    deprecated: Deprecated
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/gptstonks/
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/gptstonks
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/openbb-chat/
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/gptstonks
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.blocks.admonition:
+      types:
+        - new
+        - settings
+        - note
+        - abstract
+        - info
+        - tip
+        - success
+        - question
+        - warning
+        - failure
+        - danger
+        - bug
+        - example
+        - quote
+  - pymdownx.blocks.details:
+      types:
+        - name: details-new
+          class: new
+        - name: details-settings
+          class: settings
+        - name: details-note
+          class: note
+        - name: details-abstract
+          class: abstract
+        - name: details-info
+          class: info
+        - name: details-tip
+          class: tip
+        - name: details-success
+          class: success
+        - name: details-question
+          class: question
+        - name: details-warning
+          class: warning
+        - name: details-failure
+          class: failure
+        - name: details-danger
+          class: danger
+        - name: details-bug
+          class: bug
+        - name: details-example
+          class: example
+        - name: details-quote
+          class: quote
+  - pymdownx.blocks.html:
+  - pymdownx.blocks.definition:
+  - pymdownx.blocks.tab:
+      alternate_style: True
+      combine_header_slug: True
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: squidfunk
+      repo: mkdocs-material
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/mkdocs.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
