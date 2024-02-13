@@ -72,12 +72,18 @@ from ..utils import get_openbb_chat_output
 
 
 def set_api_debug():
+    """Set API in debug mode."""
     if DEBUG_API is not None:
         set_debug(True)
 
 
 def download_vsi(vsi_path: str):
-    """Download Vector Store Index (VSI) if necessary."""
+    """Download Vector Store Index (VSI) if necessary.
+
+    Args:
+        vsi_path (`str`):
+            Path to VSI. If it doesn't exist already, it is downloaded from Google Drive's URI AUTOLLAMAINDEX_VSI_GDRIVE_URI.
+    """
 
     if not os.path.exists(vsi_path):
         gdown.download_folder(AUTOLLAMAINDEX_VSI_GDRIVE_URI, output=vsi_path)
@@ -86,7 +92,11 @@ def download_vsi(vsi_path: str):
 
 
 def load_embed_model() -> str | OpenAIEmbedding:
-    """Get LlamaIndex embedding model."""
+    """Get LlamaIndex embedding model.
+
+    Returns:
+        `str | OpenAIEmbedding`: ID of the model or the LangChain's OpenAI Embedding object.
+    """
 
     if AUTOLLAMAINDEX_EMBEDDING_MODEL_ID == "default":
         return OpenAIEmbedding(
@@ -97,6 +107,22 @@ def load_embed_model() -> str | OpenAIEmbedding:
 
 
 def create_openai_common_kwargs(llm_model_name: str) -> dict:
+    """Create common parameters for OpenAI's LLM.
+
+    These parameters include:
+    - model_name (`str`): model ID of the LLM.
+    - temperature (`float`): temperature to perform the sampling.
+    - request_timeout (`float`): timeout in seconds before cancelling the request to OpenAI API.
+    - max_tokens (`int`): max. number of tokens to generate with the LLM.
+    - top_p (`float`): top-p value to use when sampling the LLM.
+    Some of these parameters are reused for other model providers.
+
+    Args:
+        llm_model_name (`str`): model ID of the LLM.
+
+    Returns:
+        `dict`: containing the common parameters.
+    """
     return {
         "model_name": llm_model_name,
         "temperature": LLM_TEMPERATURE,
@@ -107,7 +133,18 @@ def create_openai_common_kwargs(llm_model_name: str) -> dict:
 
 
 def load_llm_model() -> LLM:
-    """Initialize the Langchain LLM to use."""
+    """Initialize the Langchain LLM to use.
+
+    Several providers are currently supported:
+    - OpenAI.
+    - AWS Bedrock.
+    - Llama.cpp.
+    - HuggingFace.
+    The provider is selected and configured based on env variables.
+
+    Returns:
+        `LLM`: LangChain's LLM object for the given provider.
+    """
 
     model_provider, llm_model_name = LLM_MODEL_ID.split(":")
     openai_common_kwargs = create_openai_common_kwargs(llm_model_name)
@@ -173,6 +210,20 @@ def init_openbb_async_tool(
     name: str = "OpenBB",
     return_direct: bool = True,
 ) -> Tool:
+    """Initialize OpenBB asynchronous agent tool.
+
+    Args:
+        auto_llama_index (`AutoLlamaIndex`):
+            contains the necessary objects for performing RAG (i.e., vector store, embedding model, etc.).
+        node_postprocessors (`list[BaseNodePostprocessor]`):
+            list of LlamaIndex's postprocessors to apply to the retrieved nodes.
+        name (`str`): name of the tool.
+        return_direct (`bool`):
+            whether or not to return directly from this tool, without going through the agent again.
+
+    Returns:
+        `Tool`: the custom agent tool.
+    """
     return Tool(
         name=name,
         func=None,
@@ -186,7 +237,21 @@ def init_openbb_async_tool(
     )
 
 
-def init_agent_tools(auto_llama_index: AutoLlamaIndex) -> list:
+def init_agent_tools(auto_llama_index: AutoLlamaIndex) -> list[Tool]:
+    """Initialize the agent tools.
+
+    These tools are by default:
+    - Search: to look up information on the Internet.
+    - Wikipedia: to look up information about places, people, etc.
+    - OpenBB: custom tool to retrieve financial data using OpenBB Platform.
+
+    Args:
+        auto_llama_index (`AutoLlamaIndex`):
+            contains the necessary objects for performing RAG (vector store, embedding model, etc.) with OpenBB docs.
+
+    Returns:
+        `list[Tool]`: list of agent tools to be used by the agent.
+    """
     node_postprocessors = [
         SimilarityPostprocessor(similarity_cutoff=AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF)
     ]
@@ -207,7 +272,11 @@ def init_agent_tools(auto_llama_index: AutoLlamaIndex) -> list:
 
 
 def init_api(app_data: AppData):
-    """Initial function called during the application startup."""
+    """Initial function called during the application startup.
+
+    Args:
+        app_data (`AppData`): global application data.
+    """
 
     set_api_debug()
 
