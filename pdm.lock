@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "testing", "llamacpp"]
+groups = ["default", "testing", "llamacpp", "docs"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:a64c09ad2476a03cf0dfa13f5b6815cd1b4469419f4c9744188a8321cb858852"
+content_hash = "sha256:0d49c9ef61071ea3ff02e932521549dc31c0e1214757ccbf8631acb26afdeeb2"
 
 [[package]]
 name = "accelerate"
@@ -150,6 +150,16 @@ files = [
 ]
 
 [[package]]
+name = "babel"
+version = "2.14.0"
+requires_python = ">=3.7"
+summary = "Internationalization utilities"
+files = [
+    {file = "Babel-2.14.0-py3-none-any.whl", hash = "sha256:efb1a25b7118e67ce3a259bed20545c29cb68be8ad2c784c83689981b7a57287"},
+    {file = "Babel-2.14.0.tar.gz", hash = "sha256:6919867db036398ba21eb5c7a0f6b28ab8cbc3ae7a73a44ebe34ae74a4e7d363"},
+]
+
+[[package]]
 name = "backoff"
 version = "2.2.1"
 requires_python = ">=3.7,<4.0"
@@ -222,6 +232,36 @@ summary = "Extensible memoizing collections and decorators"
 files = [
     {file = "cachetools-5.3.2-py3-none-any.whl", hash = "sha256:861f35a13a451f94e301ce2bec7cac63e881232ccce7ed67fab9b5df4d3beaa1"},
     {file = "cachetools-5.3.2.tar.gz", hash = "sha256:086ee420196f7b2ab9ca2db2520aca326318b68fe5ba8bc4d49cca91add450f2"},
+]
+
+[[package]]
+name = "cairocffi"
+version = "1.6.1"
+requires_python = ">=3.7"
+summary = "cffi-based cairo bindings for Python"
+dependencies = [
+    "cffi>=1.1.0",
+]
+files = [
+    {file = "cairocffi-1.6.1-py3-none-any.whl", hash = "sha256:aa78ee52b9069d7475eeac457389b6275aa92111895d78fbaa2202a52dac112e"},
+    {file = "cairocffi-1.6.1.tar.gz", hash = "sha256:78e6bbe47357640c453d0be929fa49cd05cce2e1286f3d2a1ca9cbda7efdb8b7"},
+]
+
+[[package]]
+name = "cairosvg"
+version = "2.7.1"
+requires_python = ">=3.5"
+summary = "A Simple SVG Converter based on Cairo"
+dependencies = [
+    "cairocffi",
+    "cssselect2",
+    "defusedxml",
+    "pillow",
+    "tinycss2",
+]
+files = [
+    {file = "CairoSVG-2.7.1-py3-none-any.whl", hash = "sha256:8a5222d4e6c3f86f1f7046b63246877a63b49923a1cd202184c3a634ef546b3b"},
+    {file = "CairoSVG-2.7.1.tar.gz", hash = "sha256:432531d72347291b9a9ebfb6777026b607563fd8719c46ee742db0aef7271ba0"},
 ]
 
 [[package]]
@@ -432,6 +472,28 @@ files = [
 ]
 
 [[package]]
+name = "csscompressor"
+version = "0.9.5"
+summary = "A python port of YUI CSS Compressor"
+files = [
+    {file = "csscompressor-0.9.5.tar.gz", hash = "sha256:afa22badbcf3120a4f392e4d22f9fff485c044a1feda4a950ecc5eba9dd31a05"},
+]
+
+[[package]]
+name = "cssselect2"
+version = "0.7.0"
+requires_python = ">=3.7"
+summary = "CSS selectors for Python ElementTree"
+dependencies = [
+    "tinycss2",
+    "webencodings",
+]
+files = [
+    {file = "cssselect2-0.7.0-py3-none-any.whl", hash = "sha256:fd23a65bfd444595913f02fc71f6b286c29261e354c41d722ca7a261a49b5969"},
+    {file = "cssselect2-0.7.0.tar.gz", hash = "sha256:1ccd984dab89fc68955043aca4e1b03e0cf29cad9880f6e28e3ba7a74b14aa5a"},
+]
+
+[[package]]
 name = "curl-cffi"
 version = "0.5.10"
 requires_python = ">=3.7"
@@ -487,6 +549,16 @@ dependencies = [
 files = [
     {file = "datasets-2.16.1-py3-none-any.whl", hash = "sha256:fafa300c78ff92d521473a3d47d60c2d3e0d6046212cc03ceb6caf6550737257"},
     {file = "datasets-2.16.1.tar.gz", hash = "sha256:ad3215e9b1984d1de4fda2123bc7319ccbdf1e17d0c3d5590d13debff308a080"},
+]
+
+[[package]]
+name = "defusedxml"
+version = "0.7.1"
+requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+summary = "XML bomb protection for Python stdlib modules"
+files = [
+    {file = "defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"},
+    {file = "defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69"},
 ]
 
 [[package]]
@@ -736,6 +808,44 @@ files = [
 ]
 
 [[package]]
+name = "ghp-import"
+version = "2.1.0"
+summary = "Copy your docs directly to the gh-pages branch."
+dependencies = [
+    "python-dateutil>=2.8.1",
+]
+files = [
+    {file = "ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343"},
+    {file = "ghp_import-2.1.0-py3-none-any.whl", hash = "sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619"},
+]
+
+[[package]]
+name = "gitdb"
+version = "4.0.11"
+requires_python = ">=3.7"
+summary = "Git Object Database"
+dependencies = [
+    "smmap<6,>=3.0.1",
+]
+files = [
+    {file = "gitdb-4.0.11-py3-none-any.whl", hash = "sha256:81a3407ddd2ee8df444cbacea00e2d038e40150acfa3001696fe0dcf1d3adfa4"},
+    {file = "gitdb-4.0.11.tar.gz", hash = "sha256:bf5421126136d6d0af55bc1e7c1af1c397a34f5b7bd79e776cd3e89785c2b04b"},
+]
+
+[[package]]
+name = "gitpython"
+version = "3.1.41"
+requires_python = ">=3.7"
+summary = "GitPython is a Python library used to interact with Git repositories"
+dependencies = [
+    "gitdb<5,>=4.0.1",
+]
+files = [
+    {file = "GitPython-3.1.41-py3-none-any.whl", hash = "sha256:c36b6634d069b3f719610175020a9aed919421c87552185b085e04fbbdb10b7c"},
+    {file = "GitPython-3.1.41.tar.gz", hash = "sha256:ed66e624884f76df22c8e16066d567aaa5a37d5b5fa19db2c6df6f7156db9048"},
+]
+
+[[package]]
 name = "gptcache"
 version = "0.1.43"
 requires_python = ">=3.8.1"
@@ -766,6 +876,19 @@ files = [
     {file = "greenlet-3.0.3-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:649dde7de1a5eceb258f9cb00bdf50e978c9db1b996964cd80703614c86495eb"},
     {file = "greenlet-3.0.3-cp310-cp310-win_amd64.whl", hash = "sha256:68834da854554926fbedd38c76e60c4a2e3198c6fbed520b106a8986445caaf9"},
     {file = "greenlet-3.0.3.tar.gz", hash = "sha256:43374442353259554ce33599da8b692d5aa96f8976d567d4badf263371fbe491"},
+]
+
+[[package]]
+name = "griffe"
+version = "0.40.1"
+requires_python = ">=3.8"
+summary = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
+dependencies = [
+    "colorama>=0.4",
+]
+files = [
+    {file = "griffe-0.40.1-py3-none-any.whl", hash = "sha256:5b8c023f366fe273e762131fe4bfd141ea56c09b3cb825aa92d06a82681cfd93"},
+    {file = "griffe-0.40.1.tar.gz", hash = "sha256:66c48a62e2ce5784b6940e603300fcfb807b6f099b94e7f753f1841661fd5c7c"},
 ]
 
 [[package]]
@@ -831,6 +954,14 @@ dependencies = [
 files = [
     {file = "html5lib-1.1-py2.py3-none-any.whl", hash = "sha256:0d78f8fde1c230e99fe37986a60526d7049ed4bf8a9fadbad5f00e22e58e041d"},
     {file = "html5lib-1.1.tar.gz", hash = "sha256:b2e5b40261e20f354d198eae92afc10d750afb487ed5e50f9c4eaf07c184146f"},
+]
+
+[[package]]
+name = "htmlmin2"
+version = "0.1.13"
+summary = "An HTML Minifier"
+files = [
+    {file = "htmlmin2-0.1.13-py3-none-any.whl", hash = "sha256:75609f2a42e64f7ce57dbff28a39890363bde9e7e5885db633317efbdf8c79a2"},
 ]
 
 [[package]]
@@ -980,6 +1111,14 @@ summary = "Lightweight pipelining with Python functions"
 files = [
     {file = "joblib-1.3.2-py3-none-any.whl", hash = "sha256:ef4331c65f239985f3f2220ecc87db222f08fd22097a3dd5698f693875f8cbb9"},
     {file = "joblib-1.3.2.tar.gz", hash = "sha256:92f865e621e17784e7955080b6d042489e3b8e294949cc44c6eac304f59772b1"},
+]
+
+[[package]]
+name = "jsmin"
+version = "3.0.1"
+summary = "JavaScript minifier."
+files = [
+    {file = "jsmin-3.0.1.tar.gz", hash = "sha256:c0959a121ef94542e807a674142606f7e90214a2b3d1eb17300244bbb5cc2bfc"},
 ]
 
 [[package]]
@@ -1177,6 +1316,16 @@ files = [
 ]
 
 [[package]]
+name = "markdown"
+version = "3.5.2"
+requires_python = ">=3.8"
+summary = "Python implementation of John Gruber's Markdown."
+files = [
+    {file = "Markdown-3.5.2-py3-none-any.whl", hash = "sha256:d43323865d89fc0cb9b20c75fc8ad313af307cc087e84b657d9eec768eddeadd"},
+    {file = "Markdown-3.5.2.tar.gz", hash = "sha256:e1ac7b3dc550ee80e602e71c1d168002f062e49f1b11e26a36264dafd4df2ef8"},
+]
+
+[[package]]
 name = "markupsafe"
 version = "2.1.3"
 requires_python = ">=3.7"
@@ -1206,6 +1355,224 @@ dependencies = [
 files = [
     {file = "marshmallow-3.20.1-py3-none-any.whl", hash = "sha256:684939db93e80ad3561392f47be0230743131560a41c5110684c16e21ade0a5c"},
     {file = "marshmallow-3.20.1.tar.gz", hash = "sha256:5d2371bbe42000f2b3fb5eaa065224df7d8f8597bc19a1bbfa5bfe7fba8da889"},
+]
+
+[[package]]
+name = "mergedeep"
+version = "1.3.4"
+requires_python = ">=3.6"
+summary = "A deep merge function for 🐍."
+files = [
+    {file = "mergedeep-1.3.4-py3-none-any.whl", hash = "sha256:70775750742b25c0d8f36c55aed03d24c3384d17c951b3175d898bd778ef0307"},
+    {file = "mergedeep-1.3.4.tar.gz", hash = "sha256:0096d52e9dad9939c3d975a774666af186eda617e6ca84df4c94dec30004f2a8"},
+]
+
+[[package]]
+name = "mkdocs"
+version = "1.5.3"
+requires_python = ">=3.7"
+summary = "Project documentation with Markdown."
+dependencies = [
+    "click>=7.0",
+    "colorama>=0.4; platform_system == \"Windows\"",
+    "ghp-import>=1.0",
+    "jinja2>=2.11.1",
+    "markdown>=3.2.1",
+    "markupsafe>=2.0.1",
+    "mergedeep>=1.3.4",
+    "packaging>=20.5",
+    "pathspec>=0.11.1",
+    "platformdirs>=2.2.0",
+    "pyyaml-env-tag>=0.1",
+    "pyyaml>=5.1",
+    "watchdog>=2.0",
+]
+files = [
+    {file = "mkdocs-1.5.3-py3-none-any.whl", hash = "sha256:3b3a78e736b31158d64dbb2f8ba29bd46a379d0c6e324c2246c3bc3d2189cfc1"},
+    {file = "mkdocs-1.5.3.tar.gz", hash = "sha256:eb7c99214dcb945313ba30426c2451b735992c73c2e10838f76d09e39ff4d0e2"},
+]
+
+[[package]]
+name = "mkdocs-autorefs"
+version = "0.5.0"
+requires_python = ">=3.8"
+summary = "Automatically link across pages in MkDocs."
+dependencies = [
+    "Markdown>=3.3",
+    "mkdocs>=1.1",
+]
+files = [
+    {file = "mkdocs_autorefs-0.5.0-py3-none-any.whl", hash = "sha256:7930fcb8ac1249f10e683967aeaddc0af49d90702af111a5e390e8b20b3d97ff"},
+    {file = "mkdocs_autorefs-0.5.0.tar.gz", hash = "sha256:9a5054a94c08d28855cfab967ada10ed5be76e2bfad642302a610b252c3274c0"},
+]
+
+[[package]]
+name = "mkdocs-gen-files"
+version = "0.5.0"
+requires_python = ">=3.7"
+summary = "MkDocs plugin to programmatically generate documentation pages during the build"
+dependencies = [
+    "mkdocs>=1.0.3",
+]
+files = [
+    {file = "mkdocs_gen_files-0.5.0-py3-none-any.whl", hash = "sha256:7ac060096f3f40bd19039e7277dd3050be9a453c8ac578645844d4d91d7978ea"},
+    {file = "mkdocs_gen_files-0.5.0.tar.gz", hash = "sha256:4c7cf256b5d67062a788f6b1d035e157fc1a9498c2399be9af5257d4ff4d19bc"},
+]
+
+[[package]]
+name = "mkdocs-git-revision-date-localized-plugin"
+version = "1.2.4"
+requires_python = ">=3.8"
+summary = "Mkdocs plugin that enables displaying the localized date of the last git modification of a markdown file."
+dependencies = [
+    "GitPython",
+    "babel>=2.7.0",
+    "mkdocs>=1.0",
+    "pytz",
+]
+files = [
+    {file = "mkdocs-git-revision-date-localized-plugin-1.2.4.tar.gz", hash = "sha256:08fd0c6f33c8da9e00daf40f7865943113b3879a1c621b2bbf0fa794ffe997d3"},
+    {file = "mkdocs_git_revision_date_localized_plugin-1.2.4-py3-none-any.whl", hash = "sha256:1f94eb510862ef94e982a2910404fa17a1657ecf29f45a07b0f438c00767fc85"},
+]
+
+[[package]]
+name = "mkdocs-literate-nav"
+version = "0.6.1"
+requires_python = ">=3.7"
+summary = "MkDocs plugin to specify the navigation in Markdown instead of YAML"
+dependencies = [
+    "mkdocs>=1.0.3",
+]
+files = [
+    {file = "mkdocs_literate_nav-0.6.1-py3-none-any.whl", hash = "sha256:e70bdc4a07050d32da79c0b697bd88e9a104cf3294282e9cb20eec94c6b0f401"},
+    {file = "mkdocs_literate_nav-0.6.1.tar.gz", hash = "sha256:78a7ab6d878371728acb0cdc6235c9b0ffc6e83c997b037f4a5c6ff7cef7d759"},
+]
+
+[[package]]
+name = "mkdocs-material"
+version = "9.5.9"
+requires_python = ">=3.8"
+summary = "Documentation that simply works"
+dependencies = [
+    "babel~=2.10",
+    "colorama~=0.4",
+    "jinja2~=3.0",
+    "markdown~=3.2",
+    "mkdocs-material-extensions~=1.3",
+    "mkdocs~=1.5.3",
+    "paginate~=0.5",
+    "pygments~=2.16",
+    "pymdown-extensions~=10.2",
+    "regex>=2022.4",
+    "requests~=2.26",
+]
+files = [
+    {file = "mkdocs_material-9.5.9-py3-none-any.whl", hash = "sha256:a5d62b73b3b74349e45472bfadc129c871dd2d4add68d84819580597b2f50d5d"},
+    {file = "mkdocs_material-9.5.9.tar.gz", hash = "sha256:635df543c01c25c412d6c22991872267723737d5a2f062490f33b2da1c013c6d"},
+]
+
+[[package]]
+name = "mkdocs-material-extensions"
+version = "1.3.1"
+requires_python = ">=3.8"
+summary = "Extension pack for Python Markdown and MkDocs Material."
+files = [
+    {file = "mkdocs_material_extensions-1.3.1-py3-none-any.whl", hash = "sha256:adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31"},
+    {file = "mkdocs_material_extensions-1.3.1.tar.gz", hash = "sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443"},
+]
+
+[[package]]
+name = "mkdocs-material"
+version = "9.5.9"
+extras = ["imaging"]
+requires_python = ">=3.8"
+summary = "Documentation that simply works"
+dependencies = [
+    "cairosvg~=2.6",
+    "mkdocs-material==9.5.9",
+    "pillow~=10.2",
+]
+files = [
+    {file = "mkdocs_material-9.5.9-py3-none-any.whl", hash = "sha256:a5d62b73b3b74349e45472bfadc129c871dd2d4add68d84819580597b2f50d5d"},
+    {file = "mkdocs_material-9.5.9.tar.gz", hash = "sha256:635df543c01c25c412d6c22991872267723737d5a2f062490f33b2da1c013c6d"},
+]
+
+[[package]]
+name = "mkdocs-minify-plugin"
+version = "0.8.0"
+requires_python = ">=3.8"
+summary = "An MkDocs plugin to minify HTML, JS or CSS files prior to being written to disk"
+dependencies = [
+    "csscompressor>=0.9.5",
+    "htmlmin2>=0.1.13",
+    "jsmin>=3.0.1",
+    "mkdocs>=1.4.1",
+]
+files = [
+    {file = "mkdocs-minify-plugin-0.8.0.tar.gz", hash = "sha256:bc11b78b8120d79e817308e2b11539d790d21445eb63df831e393f76e52e753d"},
+    {file = "mkdocs_minify_plugin-0.8.0-py3-none-any.whl", hash = "sha256:5fba1a3f7bd9a2142c9954a6559a57e946587b21f133165ece30ea145c66aee6"},
+]
+
+[[package]]
+name = "mkdocs-section-index"
+version = "0.3.8"
+requires_python = ">=3.7"
+summary = "MkDocs plugin to allow clickable sections that lead to an index page"
+dependencies = [
+    "mkdocs>=1.2",
+]
+files = [
+    {file = "mkdocs_section_index-0.3.8-py3-none-any.whl", hash = "sha256:823d298d78bc1e73e23678ff60889f3c369c2167b03dba73fea88bd0e268a60d"},
+    {file = "mkdocs_section_index-0.3.8.tar.gz", hash = "sha256:bbd209f0da79441baf136ef3a9c40665bb9681d1fb62c73ca2f116fd1388a404"},
+]
+
+[[package]]
+name = "mkdocstrings"
+version = "0.24.0"
+requires_python = ">=3.8"
+summary = "Automatic documentation from sources, for MkDocs."
+dependencies = [
+    "Jinja2>=2.11.1",
+    "Markdown>=3.3",
+    "MarkupSafe>=1.1",
+    "click>=7.0",
+    "mkdocs-autorefs>=0.3.1",
+    "mkdocs>=1.4",
+    "platformdirs>=2.2.0",
+    "pymdown-extensions>=6.3",
+]
+files = [
+    {file = "mkdocstrings-0.24.0-py3-none-any.whl", hash = "sha256:f4908560c10f587326d8f5165d1908817b2e280bbf707607f601c996366a2264"},
+    {file = "mkdocstrings-0.24.0.tar.gz", hash = "sha256:222b1165be41257b494a9d29b14135d2b7ca43f38161d5b10caae03b87bd4f7e"},
+]
+
+[[package]]
+name = "mkdocstrings-python"
+version = "1.8.0"
+requires_python = ">=3.8"
+summary = "A Python handler for mkdocstrings."
+dependencies = [
+    "griffe>=0.37",
+    "mkdocstrings>=0.20",
+]
+files = [
+    {file = "mkdocstrings_python-1.8.0-py3-none-any.whl", hash = "sha256:4209970cc90bec194568682a535848a8d8489516c6ed4adbe58bbc67b699ca9d"},
+    {file = "mkdocstrings_python-1.8.0.tar.gz", hash = "sha256:1488bddf50ee42c07d9a488dddc197f8e8999c2899687043ec5dd1643d057192"},
+]
+
+[[package]]
+name = "mkdocstrings"
+version = "0.24.0"
+extras = ["python"]
+requires_python = ">=3.8"
+summary = "Automatic documentation from sources, for MkDocs."
+dependencies = [
+    "mkdocstrings-python>=0.5.2",
+    "mkdocstrings==0.24.0",
+]
+files = [
+    {file = "mkdocstrings-0.24.0-py3-none-any.whl", hash = "sha256:f4908560c10f587326d8f5165d1908817b2e280bbf707607f601c996366a2264"},
+    {file = "mkdocstrings-0.24.0.tar.gz", hash = "sha256:222b1165be41257b494a9d29b14135d2b7ca43f38161d5b10caae03b87bd4f7e"},
 ]
 
 [[package]]
@@ -2096,6 +2463,14 @@ files = [
 ]
 
 [[package]]
+name = "paginate"
+version = "0.5.6"
+summary = "Divides large result sets into pages for easier browsing"
+files = [
+    {file = "paginate-0.5.6.tar.gz", hash = "sha256:5e6007b6a9398177a7e1648d04fdd9f8c9766a1a945bceac82f1929e8c78af2d"},
+]
+
+[[package]]
 name = "pandas"
 version = "2.1.4"
 requires_python = ">=3.9"
@@ -2114,6 +2489,16 @@ files = [
     {file = "pandas-2.1.4-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:426dc0f1b187523c4db06f96fb5c8d1a845e259c99bda74f7de97bd8a3bb3139"},
     {file = "pandas-2.1.4-cp310-cp310-win_amd64.whl", hash = "sha256:f237e6ca6421265643608813ce9793610ad09b40154a3344a088159590469e46"},
     {file = "pandas-2.1.4.tar.gz", hash = "sha256:fcb68203c833cc735321512e13861358079a96c174a61f5116a1de89c58c0ef7"},
+]
+
+[[package]]
+name = "pathspec"
+version = "0.12.1"
+requires_python = ">=3.8"
+summary = "Utility library for gitignore style pattern matching of file paths."
+files = [
+    {file = "pathspec-0.12.1-py3-none-any.whl", hash = "sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08"},
+    {file = "pathspec-0.12.1.tar.gz", hash = "sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"},
 ]
 
 [[package]]
@@ -2443,6 +2828,20 @@ files = [
 ]
 
 [[package]]
+name = "pymdown-extensions"
+version = "10.7"
+requires_python = ">=3.8"
+summary = "Extension pack for Python Markdown."
+dependencies = [
+    "markdown>=3.5",
+    "pyyaml",
+]
+files = [
+    {file = "pymdown_extensions-10.7-py3-none-any.whl", hash = "sha256:6ca215bc57bc12bf32b414887a68b810637d039124ed9b2e5bd3325cbb2c050c"},
+    {file = "pymdown_extensions-10.7.tar.gz", hash = "sha256:c0d64d5cf62566f59e6b2b690a4095c931107c250a8c8e1351c1de5f6b036deb"},
+]
+
+[[package]]
 name = "pymongo"
 version = "4.6.1"
 requires_python = ">=3.7"
@@ -2639,6 +3038,19 @@ files = [
     {file = "PyYAML-6.0.1-cp310-cp310-win32.whl", hash = "sha256:bd4af7373a854424dabd882decdc5579653d7868b8fb26dc7d0e99f823aa5924"},
     {file = "PyYAML-6.0.1-cp310-cp310-win_amd64.whl", hash = "sha256:fd1592b3fdf65fff2ad0004b5e363300ef59ced41c2e6b3a99d4089fa8c5435d"},
     {file = "PyYAML-6.0.1.tar.gz", hash = "sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43"},
+]
+
+[[package]]
+name = "pyyaml-env-tag"
+version = "0.1"
+requires_python = ">=3.6"
+summary = "A custom YAML tag for referencing environment variables in YAML files. "
+dependencies = [
+    "pyyaml",
+]
+files = [
+    {file = "pyyaml_env_tag-0.1-py3-none-any.whl", hash = "sha256:af31106dec8a4d68c60207c1886031cbf839b68aa7abccdb19868200532c2069"},
+    {file = "pyyaml_env_tag-0.1.tar.gz", hash = "sha256:70092675bda14fdec33b31ba77e7543de9ddc88f2e5b99160396572d11525bdb"},
 ]
 
 [[package]]
@@ -2957,6 +3369,16 @@ files = [
 ]
 
 [[package]]
+name = "smmap"
+version = "5.0.1"
+requires_python = ">=3.7"
+summary = "A pure Python implementation of a sliding window memory map manager"
+files = [
+    {file = "smmap-5.0.1-py3-none-any.whl", hash = "sha256:e6d8668fa5f93e706934a62d7b4db19c8d9eb8cf2adbb75ef1b675aa332b69da"},
+    {file = "smmap-5.0.1.tar.gz", hash = "sha256:dceeb6c0028fdb6734471eb07c0cd2aae706ccaecab45965ee83f11c8d3b1f62"},
+]
+
+[[package]]
 name = "sniffio"
 version = "1.3.0"
 requires_python = ">=3.7"
@@ -3094,6 +3516,19 @@ files = [
     {file = "tiktoken-0.5.2-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:3d8c7d2c9313f8e92e987d585ee2ba0f7c40a0de84f4805b093b634f792124f5"},
     {file = "tiktoken-0.5.2-cp310-cp310-win_amd64.whl", hash = "sha256:692eca18c5fd8d1e0dde767f895c17686faaa102f37640e884eecb6854e7cca7"},
     {file = "tiktoken-0.5.2.tar.gz", hash = "sha256:f54c581f134a8ea96ce2023ab221d4d4d81ab614efa0b2fbce926387deb56c80"},
+]
+
+[[package]]
+name = "tinycss2"
+version = "1.2.1"
+requires_python = ">=3.7"
+summary = "A tiny CSS parser"
+dependencies = [
+    "webencodings>=0.4",
+]
+files = [
+    {file = "tinycss2-1.2.1-py3-none-any.whl", hash = "sha256:2b80a96d41e7c3914b8cda8bc7f705a4d9c49275616e886103dd839dfc847847"},
+    {file = "tinycss2-1.2.1.tar.gz", hash = "sha256:8cff3a8f066c2ec677c06dbc7b45619804a6938478d9d73c284b29d14ecb0627"},
 ]
 
 [[package]]
@@ -3387,6 +3822,31 @@ dependencies = [
 files = [
     {file = "virtualenv-20.25.0-py3-none-any.whl", hash = "sha256:4238949c5ffe6876362d9c0180fc6c3a824a7b12b80604eeb8085f2ed7460de3"},
     {file = "virtualenv-20.25.0.tar.gz", hash = "sha256:bf51c0d9c7dd63ea8e44086fa1e4fb1093a31e963b86959257378aef020e1f1b"},
+]
+
+[[package]]
+name = "watchdog"
+version = "4.0.0"
+requires_python = ">=3.8"
+summary = "Filesystem events monitoring"
+files = [
+    {file = "watchdog-4.0.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:39cb34b1f1afbf23e9562501673e7146777efe95da24fab5707b88f7fb11649b"},
+    {file = "watchdog-4.0.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c522392acc5e962bcac3b22b9592493ffd06d1fc5d755954e6be9f4990de932b"},
+    {file = "watchdog-4.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:6c47bdd680009b11c9ac382163e05ca43baf4127954c5f6d0250e7d772d2b80c"},
+    {file = "watchdog-4.0.0-pp310-pypy310_pp73-macosx_10_9_x86_64.whl", hash = "sha256:6e949a8a94186bced05b6508faa61b7adacc911115664ccb1923b9ad1f1ccf7b"},
+    {file = "watchdog-4.0.0-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:6a4db54edea37d1058b08947c789a2354ee02972ed5d1e0dca9b0b820f4c7f92"},
+    {file = "watchdog-4.0.0-pp39-pypy39_pp73-macosx_10_9_x86_64.whl", hash = "sha256:d31481ccf4694a8416b681544c23bd271f5a123162ab603c7d7d2dd7dd901a07"},
+    {file = "watchdog-4.0.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:8fec441f5adcf81dd240a5fe78e3d83767999771630b5ddfc5867827a34fa3d3"},
+    {file = "watchdog-4.0.0-py3-none-manylinux2014_armv7l.whl", hash = "sha256:6a9c71a0b02985b4b0b6d14b875a6c86ddea2fdbebd0c9a720a806a8bbffc69f"},
+    {file = "watchdog-4.0.0-py3-none-manylinux2014_i686.whl", hash = "sha256:557ba04c816d23ce98a06e70af6abaa0485f6d94994ec78a42b05d1c03dcbd50"},
+    {file = "watchdog-4.0.0-py3-none-manylinux2014_ppc64.whl", hash = "sha256:d0f9bd1fd919134d459d8abf954f63886745f4660ef66480b9d753a7c9d40927"},
+    {file = "watchdog-4.0.0-py3-none-manylinux2014_ppc64le.whl", hash = "sha256:f9b2fdca47dc855516b2d66eef3c39f2672cbf7e7a42e7e67ad2cbfcd6ba107d"},
+    {file = "watchdog-4.0.0-py3-none-manylinux2014_s390x.whl", hash = "sha256:73c7a935e62033bd5e8f0da33a4dcb763da2361921a69a5a95aaf6c93aa03a87"},
+    {file = "watchdog-4.0.0-py3-none-manylinux2014_x86_64.whl", hash = "sha256:6a80d5cae8c265842c7419c560b9961561556c4361b297b4c431903f8c33b269"},
+    {file = "watchdog-4.0.0-py3-none-win32.whl", hash = "sha256:8f9a542c979df62098ae9c58b19e03ad3df1c9d8c6895d96c0d51da17b243b1c"},
+    {file = "watchdog-4.0.0-py3-none-win_amd64.whl", hash = "sha256:f970663fa4f7e80401a7b0cbeec00fa801bf0287d93d48368fc3e6fa32716245"},
+    {file = "watchdog-4.0.0-py3-none-win_ia64.whl", hash = "sha256:9a03e16e55465177d416699331b0f3564138f1807ecc5f2de9d55d8f188d08c7"},
+    {file = "watchdog-4.0.0.tar.gz", hash = "sha256:e3e7065cbdabe6183ab82199d7a4f6b3ba0a438c5a512a68559846ccb76a78ec"},
 ]
 
 [[package]]
