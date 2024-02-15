@@ -12,7 +12,7 @@ nav = mkdocs_gen_files.Nav()
 for path in sorted(Path(".").rglob("*.py")):
     module_path = path.relative_to(".").with_suffix("")
     doc_path = path.relative_to(".").with_suffix(".md")
-    full_doc_path = Path("reference", doc_path)
+    full_doc_path = Path(".", doc_path)
 
     parts = list(module_path.parts)
 
@@ -34,8 +34,8 @@ for path in sorted(Path(".").rglob("*.py")):
 
     mkdocs_gen_files.set_edit_path(full_doc_path, path)
 
-with mkdocs_gen_files.open("reference/SUMMARY.md", "w") as nav_file, mkdocs_gen_files.open(
-    "index.md", "w"
-) as index_md, open("README.md") as readme_md:
-    index_md.writelines(readme_md.readlines())
-    nav_file.writelines(nav.build_literate_nav())
+with mkdocs_gen_files.open("gptstonks_api/index.md", "w") as index_md, open(
+    "README.md"
+) as readme_md:
+    lines = [line.replace("./assets", "../assets") for line in readme_md.readlines()]
+    index_md.writelines(lines)
