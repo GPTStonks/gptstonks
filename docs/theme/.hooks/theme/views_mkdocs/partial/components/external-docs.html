@@ -1,0 +1,11 @@
+## {{ texts.external_docs }}
+
+{% if externalDocs.description -%}
+{{ externalDocs.description | wordwrap(80) }}
+
+<hr />
+{%- endif -%}
+
+<div class="external-docs info-data">
+    <strong>{{ texts.for_more_information }}:</strong> <a href="{{ externalDocs.url }}" target="_blank" rel="noopener noreferrer">{{ externalDocs.url }}</a>
+</div>

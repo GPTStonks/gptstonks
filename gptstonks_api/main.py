@@ -8,10 +8,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from .agent import run_agent_in_background
-from .auth_routers import tokens
 from .constants import API_DESCRIPTION
 from .initialization import init_api
 from .models import AppData, BaseAgentResponse, DataAgentResponse, QueryIn
+from .routers import tokens
 
 app_data = AppData()
 
@@ -28,13 +28,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="GPTStonks Chat CE API",
     description=API_DESCRIPTION,
-    version="0.0.1",
+    version="0.0.2",
     contact={
         "name": "GPTStonks, part of Mitheithel",
         "email": "contact@mitheithel.com",
     },
     license_info={
-        "name": "Apache 2.0",
+        "name": "MIT",
         "identifier": "MIT",
     },
     lifespan=lifespan,

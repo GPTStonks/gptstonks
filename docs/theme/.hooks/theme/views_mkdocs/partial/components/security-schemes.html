@@ -1,0 +1,22 @@
+## {{ texts.security_schemes }}
+
+<table>
+    <thead>
+        <tr>
+            <th>{{ texts.name }}</th>
+            <th>{{ texts.type }}</th>
+            <th>{{ texts.scheme }}</th>
+            <th>{{ texts.description }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, definition in components.securitySchemes.items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ definition.type }}</td>
+            <td>{{ definition.scheme }}</td>
+            <td>{{ definition.description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

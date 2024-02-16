@@ -57,6 +57,7 @@ docs = [
     "mkdocs-minify-plugin>=0.8.0",
     "mkdocs-git-revision-date-localized-plugin>=1.2.4",
     "mkdocs-section-index>=0.3.8",
+    "essentials-openapi[full]>=1.0.9",
 ]
 
 # [tool.pdm.resolution.overrides]

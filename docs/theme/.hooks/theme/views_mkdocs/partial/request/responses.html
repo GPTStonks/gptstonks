@@ -1,0 +1,76 @@
+<h4>Responses</h4>
+
+{% set response = namespace(title="", type="") %}
+{% for code, definition in operation.responses.items() %}
+{% if code == "default" %}
+  {% set response.title = texts.other_responses %}
+  {% set response.type = "success" %}
+{% else %}
+  {% with phrase = get_http_status_phrase(code) %}
+  {% set response.title = code %}
+  {% if definition.description %}
+    {% set response.title = response.title ~ " " ~ definition.description %}
+  {% elif phrase %}
+    {% set response.title = response.title ~ " " ~ phrase %}
+  {% endif %}
+  {% if code and code == "200" %}
+    {% set response.type = "success" %}
+  {% else %}
+    {% set response.type = "failure" %}
+  {% endif %}
+  {% endwith %}
+{% endif %}
+
+/// details | {{ response.title }}
+    type: {{ response.type }}
+
+{%- if is_reference(definition) -%}
+{%- with type_name = definition["$ref"].replace("#/components/responses/", "") %}
+<div class="common-response"><p>Refer to the common response description: <a href="#{{ type_name.lower() | link }}" class="ref-link">{{ type_name }}</a>.</p></div>
+{%- endwith -%}
+{%- endif -%}
+{%- if definition.content %}
+{%- with content = handler.simplify_content(definition.content) %}
+{% for content_type, definition in content.items() %}
+//// tab | {{ content_type }}
+{% include "partial/components/examples.html" %}
+{% if "alt_types" in definition %}<em class="small-note alt-types">{{texts.other_possible_types}}: {{definition.alt_types | join(", ")}}</em>{% endif %}
+///// details | {{ texts.schema_of_the_response_body }}
+```json
+{{handler.write_content_schema(definition) | safe}}
+```
+/////
+////
+{% endfor %}
+{% endwith -%}
+{% endif -%}
+{%- if definition.headers %}
+<div class="response-section">
+    <p class="response-headers sub-section-title">{{ texts.response_headers }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>{{ texts.name }}</th>
+                <th>{{ texts.description }}</th>
+                <th>{{ texts.schema }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {%- for header_name, header_definition in definition.headers.items() %}
+            <tr>
+                <td><code>{{ header_name }}</code></td>
+                <td>{{ header_definition.description }}</td>
+                <td>
+                    {%- with schema = header_definition.schema %}
+                    {%- include "partial/schema-repr.html" -%}
+                    {% endwith -%}
+                </td>
+            </tr>
+            {%- endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif -%}
+///
+{%- endfor -%}

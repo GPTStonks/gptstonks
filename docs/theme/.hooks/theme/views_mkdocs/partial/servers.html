@@ -1,0 +1,20 @@
+## {{ texts.servers }}
+
+<table>
+    <thead>
+        <tr>
+            <th>{{ texts.url }}</th>
+            <th>{{ texts.description }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {%- for server in servers %}
+        <tr>
+            <td>
+                <a href="{{ server.url }}" target="_blank" rel="noopener noreferrer">{{ server.url }}</a>
+            </td>
+            <td>{{ server.description or "" }}</td>
+        </tr>
+        {%- endfor %}
+    </tbody>
+</table>

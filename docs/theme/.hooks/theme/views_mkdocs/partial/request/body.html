@@ -1,0 +1,16 @@
+<p class="request-body-title"><strong>{{ texts.request_body }}</strong></p>
+
+{% with content = handler.simplify_content(operation.requestBody.content) %}
+{% for content_type, definition in content.items() %}
+/// tab | {{ content_type }}
+{% include "partial/components/examples.html" %}
+{% if "alt_types" in definition %}<em class="small-note alt-types">{{ texts.other_accepted_types }}: {{ definition.alt_types | join(", ") }}</em>{% endif %}
+
+/// details | {{ texts.schema_of_the_request_body }}
+```json
+{{ handler.write_content_schema(definition) | safe }}
+```
+///
+///
+{% endfor %}
+{% endwith %}

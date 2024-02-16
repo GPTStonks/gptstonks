@@ -1,0 +1,7 @@
+## {{ texts.schemas }}
+{% for name, definition in handler.get_schemas() %}
+
+### {{ name }}
+{% include "partial/type.html" %}
+
+{% endfor %}
