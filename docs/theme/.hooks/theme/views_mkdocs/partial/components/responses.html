@@ -1,0 +1,28 @@
+## {{ texts.common_responses }}
+
+{{ texts.common_responses_about }}
+
+{% for name, definition in components.responses.items() %}
+
+### {{ name }}
+{% if definition.description %}{{ definition.description | wordwrap(80) }}{% endif %}
+
+{%- if definition.content %}
+{% with content = handler.simplify_content(definition.content) %}
+<p class="message-separator"></p>
+{% for content_type, definition in content.items() %}
+/// tab | {{ content_type }}
+{% include "partial/content/examples.html" %}
+{% if "alt_types" in definition %}<em class="small-note alt-types">{{ texts.other_possible_types }}: {{ definition.alt_types | join(", ") }}</em>{% endif %}
+
+//// detail | {{ texts.schema_of_the_response_body }}
+```json
+{{ handler.write_content_schema(definition) | safe }}
+```
+////
+///
+{% endfor %}
+{% endwith %}
+
+{% endif %}
+{% endfor %}

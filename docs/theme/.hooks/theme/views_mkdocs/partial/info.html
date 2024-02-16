@@ -1,0 +1,24 @@
+# {{ info.title }} <span class="api-version">{{ info.version }}</span>
+
+{% if info.description -%}
+{{ info.description | wordwrap(80) }}
+<hr />
+{%- endif -%}
+
+{%- if info.termsOfService %}
+<div class="terms-of-service info-data">
+    <strong>{{ texts.terms_of_service }}:</strong> <a href="{{ info.termsOfService }}" target="_blank" rel="noopener noreferrer">{{ info.termsOfService }}</a>
+</div>
+{% endif -%}
+
+{%- if info.contact %}
+<div class="contact info-data">
+    <strong>{{texts.contact}}:</strong> <a href="mailto:{{info.contact.email}}">{{info.contact.name}} {{info.contact.email}}</a>
+</div>
+{% endif -%}
+
+{%- if info.license %}
+<div class="license info-data">
+    <strong>{{texts.license}}:</strong> <a href="{{info.license.url}}" target="_blank" rel="noopener noreferrer">{{info.license.name}}</a>
+</div>
+{% endif -%}

@@ -1,0 +1,28 @@
+<h4>{{ texts.parameters }}</h4>
+
+<table>
+    <thead>
+        <tr>
+            <th>{{ texts.parameter }}</th>
+            <th>{{ texts.parameter_location }}</th>
+            <th>{{ texts.type }}</th>
+            <th>{{ texts.nullable }}</th>
+            <th>{{ texts.description }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {%- for param in parameters %}
+        <tr>
+            <td class="parameter-name"><code>{{ param.name }}</code></td>
+            <td>{{ param.in }}</td>
+            <td>{{ read_dict(param, "schema", "type") }}</td>
+            <td>{{ texts.get_yes_no(read_dict(param, "schema", "nullable", default=False)) }}</td>
+            <td>
+                {{ read_dict(param, "description", default="") }}{% if param.schema.enum %}<br>
+                Available values: {{ param.schema.enum | join(", ") }}
+                {% endif %}
+            </td>
+        </tr>
+        {%- endfor %}
+    </tbody>
+</table>

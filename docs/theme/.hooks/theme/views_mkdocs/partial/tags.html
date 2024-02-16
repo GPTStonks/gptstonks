@@ -1,0 +1,8 @@
+## {{ texts.tags }}
+
+{% with rows = [[texts.name, texts.description]] %}
+{%- for tag in tags -%}
+{%- set _ = rows.append([tag.name, read_dict(tag, "description", default="")]) -%}
+{%- endfor -%}
+{{ rows | table }}
+{% endwith -%}

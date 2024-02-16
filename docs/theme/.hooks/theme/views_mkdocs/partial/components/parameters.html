@@ -1,0 +1,32 @@
+## {{ texts.common_parameters }}
+
+{{ texts.common_parameters_about }}
+
+{% for name, param in components.parameters.items() %}
+
+### {{ name }}
+
+<table>
+    <thead>
+        <tr>
+            <th>{{ texts.name }}</th>
+            <th>{{ texts.parameter_location }}</th>
+            <th>{{ texts.type }}</th>
+            <th>{{ texts.default }}</th>
+            <th>{{ texts.nullable }}</th>
+            <th>{{ texts.description }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="parameter-name"><code>{{ param.name }}</code></td>
+            <td>{{ param.in }}</td>
+            <td>{{ read_dict(param, "schema", "type") }}</td>
+            <td>{{ read_dict(param, "schema", "default", default="<i>none</i>") }}</td>
+            <td>{{ texts.get_yes_no(read_dict(param, "schema", "nullable", default=false)) }}</td>
+            <td>{{ read_dict(param, "schema", "description", default="") }}</td>
+        </tr>
+    </tbody>
+</table>
+
+{% endfor %}
