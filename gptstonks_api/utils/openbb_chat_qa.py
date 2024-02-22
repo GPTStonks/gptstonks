@@ -10,8 +10,6 @@ from llama_index.postprocessor.types import BaseNodePostprocessor
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from requests.exceptions import ReadTimeout
 
-from ..constants import CUSTOM_GPTSTONKS_QA
-
 
 async def get_openbb_chat_output(
     query_str: str,
