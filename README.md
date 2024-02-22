@@ -231,7 +231,6 @@ Check `http://localhost:8000/docs` once the API is started to access the endpoin
 | SEARCH_TOOL_DESCRIPTION                        | No       | None (Default DDG Search description)       | DDG's search tool description for the LLM agent.                                                      |
 | CUSTOM_GPTSTONKS_PREFIX                        | No       | None (Default LangChain agent prefix)       | Prefix to use with LLM agent.                                                                         |
 | CUSTOM_GPTSTONKS_SUFFIX                        | No       | None (Default LangChain agent suffix)       | Suffix to use with LLm agent.                                                                         |
-| CUSTOM_GPTSTONKS_QA (DEPRECATED)               | No       | None (LlamaIndex's Default QA Template)     | QA template to use with LLM agent QA tools.                                                           |
 
 ## Contributing 🤝
 
