@@ -19,14 +19,13 @@ from langchain_community.utilities import (
 )
 from langchain_core.language_models.llms import LLM
 from langchain_openai import ChatOpenAI
-from llama_index.embeddings import OpenAIEmbedding
-from llama_index.embeddings.openai import OpenAIEmbeddingModelType
-from llama_index.llms import LangChainLLM
-from llama_index.postprocessor import (
+from llama_index.core.postprocessor import (
     MetadataReplacementPostProcessor,
     SimilarityPostprocessor,
 )
-from llama_index.postprocessor.types import BaseNodePostprocessor
+from llama_index.core.postprocessor.types import BaseNodePostprocessor
+from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
+from llama_index.llms.langchain import LangChainLLM
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from openbb_chat.llms.chat_model_llm_iface import ChatModelWithLLMIface
 from pymongo import MongoClient
@@ -39,10 +38,10 @@ from ..constants import (
     AI_PREFIX,
     AUTOLLAMAINDEX_EMBEDDING_MODEL_ID,
     AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
-    AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER,
     AUTOLLAMAINDEX_QA_TEMPLATE,
     AUTOLLAMAINDEX_REFINE_TEMPLATE,
     AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR,
+    AUTOLLAMAINDEX_RETRIEVER_TYPE,
     AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF,
     AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
     AUTOLLAMAINDEX_VSI_GDRIVE_URI,
@@ -301,7 +300,7 @@ def init_api(app_data: AppData):
         other_llama_index_vector_index_retriever_kwargs={
             "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K
         },
-        use_hybrid_retriever=(not AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER),
+        retriever_type=AUTOLLAMAINDEX_RETRIEVER_TYPE or "hybrid",
     )
     # REPL to execute code
     app_data.python_repl_utility = PythonREPL()
