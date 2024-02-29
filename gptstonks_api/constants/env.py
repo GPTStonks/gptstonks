@@ -8,8 +8,6 @@ The list of env variables is provided in [Configuration with environment variabl
 """
 import os
 
-from llama_index.prompts.default_prompts import DEFAULT_TEXT_QA_PROMPT_TMPL
-
 MONGO_URI: str = os.environ["MONGO_URI"]
 MONGO_DBNAME: str = os.environ["MONGO_DBNAME"]
 DEBUG_API: str | None = os.getenv("DEBUG_API")
@@ -28,9 +26,7 @@ AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW: int = int(os.getenv("AUTOLLAMAINDEX_LLM_CONTE
 AUTOLLAMAINDEX_QA_TEMPLATE: str | None = os.getenv("AUTOLLAMAINDEX_QA_TEMPLATE")
 AUTOLLAMAINDEX_REFINE_TEMPLATE: str | None = os.getenv("AUTOLLAMAINDEX_REFINE_TEMPLATE")
 AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K: int = int(os.getenv("AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K", 3))
-AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER: str | None = os.getenv(
-    "AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER"
-)
+AUTOLLAMAINDEX_RETRIEVER_TYPE: str | None = os.getenv("AUTOLLAMAINDEX_RETRIEVER_TYPE")
 AGENT_REQUEST_TIMEOUT: float = float(os.getenv("AGENT_REQUEST_TIMEOUT", 20))
 AGENT_EARLY_STOPPING_METHOD: str = os.getenv("AGENT_EARLY_STOPPING_METHOD", "force")
 LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", 0.1))
