@@ -1,7 +1,6 @@
 from typing import List, Optional
 from urllib.error import HTTPError
 
-import yfinance as yf
 from langchain.llms.base import BaseLLM
 from langchain.prompts import PromptTemplate
 from langchain.tools.base import BaseTool

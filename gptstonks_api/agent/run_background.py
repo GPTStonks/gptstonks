@@ -28,16 +28,17 @@ async def run_agent_in_background(
         )  # Retrieve OpenBB PAT from database
 
         # Run agent. Best responses but high quality LLMs needed (e.g., Claude Instant or GPT-3.5)
-        tool_execution_order_callback = ToolExecutionOrderCallback()
-        output_str = await app_data.agent_executor.arun(
-            query, callbacks=[tool_execution_order_callback]
+        agent_res = await app_data.agent_executor.ainvoke(
+            {"input": query},
         )
-        tools_executed = tool_execution_order_callback.tools_used.copy()
-        output_str = add_context_to_output(output=output_str, tools_executed=tools_executed)
 
-        if "OpenBB" in tools_executed:
+        # If last step is OpenBB, run code
+        if (
+            len(agent_res["intermediate_steps"]) > 0
+            and agent_res["intermediate_steps"][-1][0].tool == "OpenBB"
+        ):
             output_str = run_repl_over_openbb(
-                openbb_chat_output=output_str,
+                openbb_chat_output=agent_res["intermediate_steps"][-1][1],
                 python_repl_utility=app_data.python_repl_utility,
                 openbb_pat=openbb_pat,
             )
@@ -52,6 +53,11 @@ async def run_agent_in_background(
                     )
                 except Exception as e:
                     return BaseAgentResponse(type="data", body=output_str)
+        else:
+            output_str = add_context_to_output(
+                output=agent_res["output"],
+                tools_executed=[step[0].tool for step in agent_res["intermediate_steps"]],
+            )
         return BaseAgentResponse(type="data", body=output_str)
     except Exception as e:
         print("Overall exception happened: " + str(e))

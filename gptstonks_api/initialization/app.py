@@ -2,7 +2,18 @@ import os
 from functools import partial
 
 import gdown
-from langchain.agents import AgentType, Tool, initialize_agent
+from langchain import hub
+from langchain.agents import (
+    AgentExecutor,
+    AgentType,
+    Tool,
+    create_react_agent,
+    initialize_agent,
+)
+from langchain.agents.format_scratchpad.openai_tools import (
+    format_to_openai_tool_messages,
+)
+from langchain.agents.output_parsers.openai_tools import OpenAIToolsAgentOutputParser
 from langchain.globals import set_debug
 from langchain_community.llms import (
     Bedrock,
@@ -18,6 +29,11 @@ from langchain_community.utilities import (
     WikipediaAPIWrapper,
 )
 from langchain_core.language_models.llms import LLM
+from langchain_core.prompts import (
+    ChatPromptTemplate,
+    MessagesPlaceholder,
+    PromptTemplate,
+)
 from langchain_openai import ChatOpenAI
 from llama_index.embeddings import OpenAIEmbedding
 from llama_index.embeddings.openai import OpenAIEmbeddingModelType
@@ -36,7 +52,6 @@ from transformers import GPTQConfig
 from ..constants import (
     AGENT_EARLY_STOPPING_METHOD,
     AGENT_REQUEST_TIMEOUT,
-    AI_PREFIX,
     AUTOLLAMAINDEX_EMBEDDING_MODEL_ID,
     AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
     AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER,
@@ -48,7 +63,6 @@ from ..constants import (
     AUTOLLAMAINDEX_VSI_GDRIVE_URI,
     AUTOLLAMAINDEX_VSI_PATH,
     CUSTOM_GPTSTONKS_PREFIX,
-    CUSTOM_GPTSTONKS_SUFFIX,
     DEBUG_API,
     LLM_CHAT_MODEL_SYSTEM_MESSAGE,
     LLM_HF_BITS,
@@ -153,10 +167,7 @@ def load_llm_model() -> LLM:
             return OpenAI(**openai_common_kwargs)
         else:
             top_p = openai_common_kwargs.pop("top_p")
-            return ChatModelWithLLMIface(
-                chat_model=ChatOpenAI(**openai_common_kwargs, model_kwargs={"top_p": top_p}),
-                system_message=LLM_CHAT_MODEL_SYSTEM_MESSAGE,
-            )
+            return ChatOpenAI(**openai_common_kwargs, model_kwargs={"top_p": top_p})
     elif model_provider == "anyscale":
         raise NotImplementedError("Anyscale does not support yet async API in langchain")
     elif model_provider == "bedrock":
@@ -266,7 +277,9 @@ def init_agent_tools(auto_llama_index: AutoLlamaIndex) -> list[Tool]:
         search_tool,
         wikipedia_tool,
         init_openbb_async_tool(
-            auto_llama_index=auto_llama_index, node_postprocessors=node_postprocessors
+            auto_llama_index=auto_llama_index,
+            node_postprocessors=node_postprocessors,
+            return_direct=False,
         ),
     ]
 
@@ -303,23 +316,50 @@ def init_api(app_data: AppData):
         },
         use_hybrid_retriever=(not AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER),
     )
+
+    # init tools
+    tools = init_agent_tools(auto_llama_index=auto_llama_index)
+
     # REPL to execute code
     app_data.python_repl_utility = PythonREPL()
     app_data.python_repl_utility.globals = globals()
 
     # Create agent
-    app_data.agent_executor = initialize_agent(
-        tools=init_agent_tools(auto_llama_index=auto_llama_index),
-        llm=llm,
-        agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+    if "openai" in LLM_MODEL_ID:
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    LLM_CHAT_MODEL_SYSTEM_MESSAGE,
+                ),
+                ("user", "{input}"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ]
+        )
+        llm_with_tools = llm.bind_tools(tools)
+        agent = (
+            {
+                "input": lambda x: x["input"],
+                "agent_scratchpad": lambda x: format_to_openai_tool_messages(
+                    x["intermediate_steps"]
+                ),
+            }
+            | prompt
+            | llm_with_tools
+            | OpenAIToolsAgentOutputParser()
+        )
+    else:
+        prompt = (
+            PromptTemplate.from_template(CUSTOM_GPTSTONKS_PREFIX)
+            if CUSTOM_GPTSTONKS_PREFIX
+            else hub.pull("hwchase17/react")
+        )
+        agent = create_react_agent(tools=tools, llm=llm, prompt=prompt)
+
+    app_data.agent_executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
         verbose=True,
-        return_intermediate_steps=False,
-        max_iterations=2,
+        return_intermediate_steps=True,
         early_stopping_method=AGENT_EARLY_STOPPING_METHOD,
-        agent_kwargs={
-            "ai_prefix": AI_PREFIX,
-            "prefix": CUSTOM_GPTSTONKS_PREFIX,
-            "suffix": CUSTOM_GPTSTONKS_SUFFIX,
-            "input_variables": ["input", "agent_scratchpad"],
-        },
     )
