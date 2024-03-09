@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 
 
 class BaseAgentResponse(BaseModel):
@@ -11,7 +11,7 @@ class BaseAgentResponse(BaseModel):
 class DataAgentResponse(BaseAgentResponse):
     """Model to define the data response parameters."""
 
-    result_data: list[dict]
+    result_data: list[dict] | Json[list[dict]]
 
 
 class MessageResponse(BaseModel):

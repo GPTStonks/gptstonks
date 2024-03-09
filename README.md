@@ -213,7 +213,7 @@ Check `http://localhost:8000/docs` once the API is started to access the endpoin
 | AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K            | No       | 3                                           | K most similar elements are retrieved with vector search.                                             |
 | AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER        | No       | None (Hybrid retrieved used)                | Whether or not to use BM25 with vector search (hybrid) or only vector search.                         |
 | AGENT_REQUEST_TIMEOUT                          | No       | 20                                          | No. seconds to wait before timeout when an API LLM is used (e.g., OpenAI).                            |
-| AGENT_EARLY_STOPPING_METHOD                    | No       | "generate"                                  | How the model should return its final output when early stopping is applied.                          |
+| AGENT_EARLY_STOPPING_METHOD                    | No       | "force"                                  | How the model should return its final output when early stopping is applied.                          |
 | LLM_TEMPERATURE                                | No       | 0.1                                         | Temperature to use when sampling.                                                                     |
 | LLM_MAX_TOKENS                                 | No       | 256                                         | No. max. tokens to sample.                                                                            |
 | LLM_TOP_P                                      | No       | 1.0                                         | Top-p parameter to apply when sampling.                                                               |
@@ -230,7 +230,6 @@ Check `http://localhost:8000/docs` once the API is started to access the endpoin
 | OPENBBCHAT_TOOL_DESCRIPTION                    | Yes      | -                                           | OpenBB Platform's tool description for the LLM agent.                                                 |
 | SEARCH_TOOL_DESCRIPTION                        | No       | None (Default DDG Search description)       | DDG's search tool description for the LLM agent.                                                      |
 | CUSTOM_GPTSTONKS_PREFIX                        | No       | None (Default LangChain agent prefix)       | Prefix to use with LLM agent.                                                                         |
-| CUSTOM_GPTSTONKS_SUFFIX                        | No       | None (Default LangChain agent suffix)       | Suffix to use with LLm agent.                                                                         |
 
 ## Contributing 🤝
 
