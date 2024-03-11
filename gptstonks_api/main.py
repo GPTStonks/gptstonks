@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(".env.template")
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware

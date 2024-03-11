@@ -22,10 +22,15 @@ from langchain_community.llms import (
     OpenAI,
     VertexAI,
 )
-from langchain_community.tools import DuckDuckGoSearchResults, WikipediaQueryRun
+from langchain_community.tools import (
+    DuckDuckGoSearchResults,
+    RequestsGetTool,
+    WikipediaQueryRun,
+)
 from langchain_community.utilities import (
     DuckDuckGoSearchAPIWrapper,
     PythonREPL,
+    TextRequestsWrapper,
     WikipediaAPIWrapper,
 )
 from langchain_core.language_models.llms import LLM
@@ -35,15 +40,18 @@ from langchain_core.prompts import (
     PromptTemplate,
 )
 from langchain_openai import ChatOpenAI
-from llama_index.embeddings import OpenAIEmbedding
-from llama_index.embeddings.openai import OpenAIEmbeddingModelType
-from llama_index.llms import LangChainLLM
-from llama_index.postprocessor import (
+from llama_index.core import PromptTemplate as LlamaIndexPromptTemplate
+from llama_index.core.langchain_helpers.agents import IndexToolConfig, LlamaIndexTool
+from llama_index.core.llms.llm import LLM as LlamaIndexLLM
+from llama_index.core.postprocessor import (
     MetadataReplacementPostProcessor,
     SimilarityPostprocessor,
 )
-from llama_index.postprocessor.types import BaseNodePostprocessor
-from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
+from llama_index.core.postprocessor.types import BaseNodePostprocessor
+from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
+from llama_index.llms.langchain import LangChainLLM
+from llama_index.llms.openai import OpenAI as LlamaIndexOpenAI
+from openbb_chat.kernels import AutoLlamaIndex, AutoMultiStepQueryEngine
 from openbb_chat.llms.chat_model_llm_iface import ChatModelWithLLMIface
 from pymongo import MongoClient
 from pymongo.database import Database
@@ -54,14 +62,17 @@ from ..constants import (
     AGENT_REQUEST_TIMEOUT,
     AUTOLLAMAINDEX_EMBEDDING_MODEL_ID,
     AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
-    AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER,
     AUTOLLAMAINDEX_QA_TEMPLATE,
     AUTOLLAMAINDEX_REFINE_TEMPLATE,
     AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR,
+    AUTOLLAMAINDEX_RETRIEVER_TYPE,
     AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF,
     AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
     AUTOLLAMAINDEX_VSI_GDRIVE_URI,
     AUTOLLAMAINDEX_VSI_PATH,
+    AUTOMULTISTEPQUERYENGINE_QA_TEMPLATE,
+    AUTOMULTISTEPQUERYENGINE_REFINE_TEMPLATE,
+    AUTOMULTISTEPQUERYENGINE_STEPDECOMPOSE_QUERY_PROMPT,
     CUSTOM_GPTSTONKS_PREFIX,
     DEBUG_API,
     LLM_CHAT_MODEL_SYSTEM_MESSAGE,
@@ -79,6 +90,7 @@ from ..constants import (
     LLM_VERTEXAI_CLOUD_LOCATION,
     OPENBBCHAT_TOOL_DESCRIPTION,
     SEARCH_TOOL_DESCRIPTION,
+    WORLD_KNOWLEDGE_TOOL_DESCRIPTION,
 )
 from ..databases import db
 from ..models import AppData
@@ -248,17 +260,126 @@ def init_openbb_async_tool(
     )
 
 
-def init_agent_tools(auto_llama_index: AutoLlamaIndex) -> list[Tool]:
+def init_world_knowledge_tool(
+    llamaindex_llm: LlamaIndexLLM,
+    name: str = "world_knowledge",
+    use_openai_agent: bool = False,
+    return_direct: bool = True,
+    verbose: bool = False,
+) -> Tool:
+    """Initialize World Knowledge tool.
+
+    The World Knowledge tool can solve complex queries by applying [multi-step reasoning](https://arxiv.org/abs/2303.09014). It has several tools available,
+    which include:
+
+    - Search: to look up information on the Internet.
+    - Wikipedia: to look up information about places, people, etc.
+    - Request: to look up specific webpages on the Internet.
+
+    In each step, the LLM can select any tool (or its own knowledge) to solve the target query. The final response is generated
+    by combining the responses to each subquery.
+
+    Args:
+        llamaindex_llm (`llama_index.core.llms.llm.LLM`):
+            LLM that will decompose the main query and answer the subqueries.
+        name (`str`): name of the tool.
+        return_direct (`bool`): whether or not the tool should return when the final answer is given.
+        verbose (`bool`): whether or not the tool should write to stdout the intermediate information.
+
+    Returns:
+        `list[Tool]`: list of agent tools to be used by the agent.
+    """
+    # Prepare tools
+    search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
+    search_tool.description = SEARCH_TOOL_DESCRIPTION or search_tool.description
+    wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
+
+    def search_tool_func(x):
+        return search_tool.run(x)
+
+    def wikipedia_tool_func(x):
+        return wikipedia_tool.run(x)
+
+    async def search_tool_async_func(x):
+        return await search_tool.arun(x)
+
+    async def wikipedia_tool_async_func(x):
+        return await wikipedia_tool.arun(x)
+
+    # Load AutoMultiStepQueryEngine
+    if use_openai_agent:
+        query_engine = AutoMultiStepQueryEngine.from_simple_openai_agent(
+            funcs=[search_tool_func, wikipedia_tool_func],
+            async_funcs=[search_tool_async_func, wikipedia_tool_async_func],
+            names=[search_tool.name, wikipedia_tool.name],
+            descriptions=[search_tool.description, wikipedia_tool.description],
+            llm=llamaindex_llm,
+            verbose=verbose,
+            index_summary=WORLD_KNOWLEDGE_TOOL_DESCRIPTION,
+        )
+    else:
+        query_engine = AutoMultiStepQueryEngine.from_simple_react_agent(
+            funcs=[search_tool_func, wikipedia_tool_func],
+            async_funcs=[search_tool_async_func, wikipedia_tool_async_func],
+            names=[search_tool.name, wikipedia_tool.name],
+            descriptions=[search_tool.description, wikipedia_tool.description],
+            llm=llamaindex_llm,
+            verbose=verbose,
+            index_summary=WORLD_KNOWLEDGE_TOOL_DESCRIPTION,
+        )
+
+    # Customize the prompts
+    prompts_dict = {}
+    if AUTOMULTISTEPQUERYENGINE_QA_TEMPLATE:
+        prompts_dict.update(
+            {
+                "response_synthesizer:text_qa_template": LlamaIndexPromptTemplate(
+                    AUTOMULTISTEPQUERYENGINE_QA_TEMPLATE
+                )
+            }
+        )
+    if AUTOMULTISTEPQUERYENGINE_REFINE_TEMPLATE:
+        prompts_dict.update(
+            {
+                "response_synthesizer:refine_template": LlamaIndexPromptTemplate(
+                    AUTOMULTISTEPQUERYENGINE_REFINE_TEMPLATE
+                )
+            }
+        )
+    if AUTOMULTISTEPQUERYENGINE_STEPDECOMPOSE_QUERY_PROMPT:
+        prompts_dict.update(
+            {
+                "query_transform:step_decompose_query_prompt": LlamaIndexPromptTemplate(
+                    AUTOMULTISTEPQUERYENGINE_STEPDECOMPOSE_QUERY_PROMPT
+                )
+            }
+        )
+    query_engine.update_prompts(prompts_dict)
+
+    # Return LangChain Tool
+    tool_config = IndexToolConfig(
+        query_engine=query_engine,
+        name=name,
+        description=WORLD_KNOWLEDGE_TOOL_DESCRIPTION,
+        tool_kwargs={"return_direct": return_direct},
+    )
+
+    return LlamaIndexTool.from_tool_config(tool_config)
+
+
+def init_agent_tools(
+    embed_model: str | OpenAIEmbedding, llm: LLM, use_openai_agent: bool = False
+) -> list[Tool]:
     """Initialize the agent tools.
 
     These tools are by default:
-    - Search: to look up information on the Internet.
-    - Wikipedia: to look up information about places, people, etc.
+    - World Knowledge: a multi-step reasoning tool to answer complex queries by looking on the Internet.
     - OpenBB: custom tool to retrieve financial data using OpenBB Platform.
 
     Args:
-        auto_llama_index (`AutoLlamaIndex`):
-            contains the necessary objects for performing RAG (vector store, embedding model, etc.) with OpenBB docs.
+        embed_model (`str | OpenAIEmbedding`):
+            embedding model to use for the RAG. It should be the same as in the Vector Store Index.
+        llm (`langchain_core.language_models.llms.LLM`): LLM to use inside the tools that need one.
 
     Returns:
         `list[Tool]`: list of agent tools to be used by the agent.
@@ -270,12 +391,33 @@ def init_agent_tools(auto_llama_index: AutoLlamaIndex) -> list[Tool]:
         node_postprocessors.append(
             MetadataReplacementPostProcessor(target_metadata_key="extra_context")
         )
-    search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
-    search_tool.description = SEARCH_TOOL_DESCRIPTION or search_tool.description
-    wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
+
+    if not use_openai_agent:
+        llamaindex_llm = LangChainLLM(llm=llm)
+    else:
+        llamaindex_llm = LlamaIndexOpenAI(model=llm.model_name, temperature=llm.temperature)
+
+    # Load AutoLlamaIndex
+    auto_llama_index = AutoLlamaIndex(
+        path=AUTOLLAMAINDEX_VSI_PATH,
+        embedding_model_id=embed_model,
+        llm_model=llamaindex_llm,
+        context_window=AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
+        qa_template_str=AUTOLLAMAINDEX_QA_TEMPLATE,
+        refine_template_str=AUTOLLAMAINDEX_REFINE_TEMPLATE,
+        other_llama_index_vector_index_retriever_kwargs={
+            "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K
+        },
+        retriever_type=AUTOLLAMAINDEX_RETRIEVER_TYPE or "hybrid",
+    )
+
     return [
-        search_tool,
-        wikipedia_tool,
+        init_world_knowledge_tool(
+            llamaindex_llm=llamaindex_llm,
+            use_openai_agent=use_openai_agent,
+            return_direct=False,
+            verbose=True,
+        ),
         init_openbb_async_tool(
             auto_llama_index=auto_llama_index,
             node_postprocessors=node_postprocessors,
@@ -301,24 +443,6 @@ def init_api(app_data: AppData):
     # Create LLM for both langchain agent and llama-index
     # In the future this logic could be moved to openbb-chat
     llm = load_llm_model()
-    llamaindex_llm = LangChainLLM(llm=llm)
-
-    # Load AutoLlamaIndex
-    auto_llama_index = AutoLlamaIndex(
-        path=AUTOLLAMAINDEX_VSI_PATH,
-        embedding_model_id=embed_model,
-        llm_model=llamaindex_llm,
-        context_window=AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
-        qa_template_str=AUTOLLAMAINDEX_QA_TEMPLATE,
-        refine_template_str=AUTOLLAMAINDEX_REFINE_TEMPLATE,
-        other_llama_index_vector_index_retriever_kwargs={
-            "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K
-        },
-        use_hybrid_retriever=(not AUTOLLAMAINDEX_NOT_USE_HYBRID_RETRIEVER),
-    )
-
-    # init tools
-    tools = init_agent_tools(auto_llama_index=auto_llama_index)
 
     # REPL to execute code
     app_data.python_repl_utility = PythonREPL()
@@ -326,13 +450,14 @@ def init_api(app_data: AppData):
 
     # Create agent
     if "openai" in LLM_MODEL_ID:
+        tools = init_agent_tools(embed_model=embed_model, llm=llm, use_openai_agent=True)
         prompt = ChatPromptTemplate.from_messages(
             [
                 (
                     "system",
                     LLM_CHAT_MODEL_SYSTEM_MESSAGE,
                 ),
-                ("user", "{input}"),
+                ("user", CUSTOM_GPTSTONKS_PREFIX or "{input}"),
                 MessagesPlaceholder(variable_name="agent_scratchpad"),
             ]
         )
@@ -349,6 +474,7 @@ def init_api(app_data: AppData):
             | OpenAIToolsAgentOutputParser()
         )
     else:
+        tools = init_agent_tools(embed_model=embed_model, llm=llm, use_openai_agent=False)
         prompt = (
             PromptTemplate.from_template(CUSTOM_GPTSTONKS_PREFIX)
             if CUSTOM_GPTSTONKS_PREFIX

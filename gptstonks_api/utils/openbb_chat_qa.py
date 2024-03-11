@@ -5,7 +5,7 @@ from langchain.llms.base import BaseLLM
 from langchain.prompts import PromptTemplate
 from langchain.tools.base import BaseTool
 from langchain_community.utilities import PythonREPL
-from llama_index.postprocessor.types import BaseNodePostprocessor
+from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from openbb_chat.kernels.auto_llama_index import AutoLlamaIndex
 from requests.exceptions import ReadTimeout
 
