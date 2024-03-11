@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "testing", "llamacpp", "docs", "dev"]
+groups = ["default", "testing", "llamacpp", "docs"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:8df866727900208a3efbee6bc38b1ae54e16eca7530373523c955770f4c10070"
+content_hash = "sha256:8c89d261b852d78bbf2c6c599354d6008449391014036e9575c3327140df6a8f"
 
 [[package]]
 name = "accelerate"
@@ -1561,13 +1561,13 @@ files = [
 
 [[package]]
 name = "llama-index"
-version = "0.10.13"
+version = "0.10.18"
 requires_python = ">=3.8.1,<4.0"
 summary = "Interface between LLMs and your data"
 dependencies = [
     "llama-index-agent-openai<0.2.0,>=0.1.4",
     "llama-index-cli<0.2.0,>=0.1.2",
-    "llama-index-core<0.11.0,>=0.10.13",
+    "llama-index-core<0.11.0,>=0.10.18",
     "llama-index-embeddings-openai<0.2.0,>=0.1.5",
     "llama-index-indices-managed-llama-cloud<0.2.0,>=0.1.2",
     "llama-index-legacy<0.10.0,>=0.9.48",
@@ -1579,8 +1579,8 @@ dependencies = [
     "llama-index-readers-llama-parse<0.2.0,>=0.1.2",
 ]
 files = [
-    {file = "llama_index-0.10.13-py3-none-any.whl", hash = "sha256:a29a7ba6a5b54bd42bc53e8f5cc6cdd79e21743ce003d48057801443f09dfc85"},
-    {file = "llama_index-0.10.13.tar.gz", hash = "sha256:70e4e796d042f1502a4c2b4ff569fd4e7049852f8d66e9b43589a37a78bf2a14"},
+    {file = "llama_index-0.10.18-py3-none-any.whl", hash = "sha256:107a534d72b7d61927c2f013ebae1e385134f2ba044fced8716e1ef55d66cb12"},
+    {file = "llama_index-0.10.18.tar.gz", hash = "sha256:116c5d96d783bfcdb88be48f1da63c9d11c56edca062cd3ee85b6054859497f7"},
 ]
 
 [[package]]
@@ -1615,7 +1615,7 @@ files = [
 
 [[package]]
 name = "llama-index-core"
-version = "0.10.13"
+version = "0.10.18.post1"
 requires_python = ">=3.8.1,<4.0"
 summary = "Interface between LLMs and your data"
 dependencies = [
@@ -1643,8 +1643,8 @@ dependencies = [
     "typing-inspect>=0.8.0",
 ]
 files = [
-    {file = "llama_index_core-0.10.13-py3-none-any.whl", hash = "sha256:40c76fc02be7cd948a333ca541f2ff38cf02774e1c960674e2b68c61943bac90"},
-    {file = "llama_index_core-0.10.13.tar.gz", hash = "sha256:826fded00767923fba8aca94f46c32b259e8879f517016ab7a3801b1b37187a1"},
+    {file = "llama_index_core-0.10.18.post1-py3-none-any.whl", hash = "sha256:e2383d0e865febfd8dfc96c1d02cd3ee99927c31b2eb3fbb50211d0829e538e5"},
+    {file = "llama_index_core-0.10.18.post1.tar.gz", hash = "sha256:0a197f27c13a9d88966469d2361f4f70fe1678d391602dd7a8ec65209c70a24b"},
 ]
 
 [[package]]
@@ -1768,15 +1768,15 @@ files = [
 
 [[package]]
 name = "llama-index-llms-openai"
-version = "0.1.6"
+version = "0.1.7"
 requires_python = ">=3.8.1,<4.0"
 summary = "llama-index llms openai integration"
 dependencies = [
     "llama-index-core<0.11.0,>=0.10.1",
 ]
 files = [
-    {file = "llama_index_llms_openai-0.1.6-py3-none-any.whl", hash = "sha256:4260ad31c3444e97ec8a8d061cb6dbf1074262b82341a2b69d2b27e8a23efe62"},
-    {file = "llama_index_llms_openai-0.1.6.tar.gz", hash = "sha256:15530dfa3893b15c5576ebc71e01b77acbf47abd689219436fdf7b6ca567a9fd"},
+    {file = "llama_index_llms_openai-0.1.7-py3-none-any.whl", hash = "sha256:162a7f1064b389d0db6f731bcedaca80e87ceca8aa919d7425ca32107e756243"},
+    {file = "llama_index_llms_openai-0.1.7.tar.gz", hash = "sha256:5ddb405c0a5847a7c2098a70ced270555f036c2793412a8992456bd32f83ff0f"},
 ]
 
 [[package]]
@@ -2679,10 +2679,8 @@ files = [
 
 [[package]]
 name = "openbb-chat"
-version = "0.0.10"
+version = "0.0.11"
 requires_python = ">=3.10,<3.12"
-editable = true
-path = "../openbb-chat"
 summary = "Deep learning package to add chat capabilities to OpenBB"
 dependencies = [
     "accelerate>=0.22.0",
@@ -2705,6 +2703,10 @@ dependencies = [
     "sentencepiece>=0.1.99",
     "torch==2.*",
     "transformers>=4.33.0",
+]
+files = [
+    {file = "openbb_chat-0.0.11-py3-none-any.whl", hash = "sha256:90bb562c84e04954acc706ac1e699410126719a1322e179e5670e86eb63c8e53"},
+    {file = "openbb_chat-0.0.11.tar.gz", hash = "sha256:850dea4dba1263bcfe3a24cbe15e9de78c70464c9c9b3dd93966ac508a3ab515"},
 ]
 
 [[package]]
