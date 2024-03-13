@@ -215,6 +215,7 @@ Check `http://localhost:8000/docs` once the API is started to access the endpoin
 | AUTOMULTISTEPQUERYENGINE_QA_TEMPLATE        | No       | None (LlamaIndex's Default QA Template)                | Template to use with AutoMultiStepQueryEngine question-answering step.                         |
 | AUTOMULTISTEPQUERYENGINE_REFINE_TEMPLATE        | No       | None (LlamaIndex's Default Refine Template)                | Template to use with AutoMultiStepQueryEngine refine step.                         |
 | AUTOMULTISTEPQUERYENGINE_STEPDECOMPOSE_QUERY_PROMPT        | No       | None (LlamaIndex's Default Step Decompose Template)                | Template to use with AutoMultiStepQueryEngine step decompose.                         |
+| AUTOMULTISTEPQUERYENGINE_INDEX_SUMMARY              | No       | "Useful to search information on the Internet."     | The index summary is used by the multi-step agent to understand its own capabilities and formulate new questions.                                         |
 | AGENT_REQUEST_TIMEOUT                          | No       | 20                                          | No. seconds to wait before timeout when an API LLM is used (e.g., OpenAI).                            |
 | AGENT_EARLY_STOPPING_METHOD                    | No       | "force"                                  | How the model should return its final output when early stopping is applied.                          |
 | LLM_TEMPERATURE                                | No       | 0.1                                         | Temperature to use when sampling.                                                                     |
@@ -232,6 +233,7 @@ Check `http://localhost:8000/docs` once the API is started to access the endpoin
 | LLM_HF_TRUST_REMOTE_CODE                       | No       | False                                       | Whether or not to trust remote code with Hugging Face's models.                                       |
 | OPENBBCHAT_TOOL_DESCRIPTION                    | Yes      | -                                           | OpenBB Platform's tool description for the LLM agent.                                                 |
 | SEARCH_TOOL_DESCRIPTION                        | No       | None (Default DDG Search description)       | DDG's search tool description for the LLM agent.                                                      |
+| WIKIPEDIA_TOOL_DESCRIPTION                          | No       | None (Default Wikipedia description)                | Wikipedia tool description for the LLM agent.                                                                                                             |
 | CUSTOM_GPTSTONKS_PREFIX                        | No       | None (Default LangChain agent prefix)       | Prefix to use with LLM agent.                                                                         |
 
 ## Contributing 🤝

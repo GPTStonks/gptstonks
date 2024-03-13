@@ -70,6 +70,7 @@ from ..constants import (
     AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
     AUTOLLAMAINDEX_VSI_GDRIVE_URI,
     AUTOLLAMAINDEX_VSI_PATH,
+    AUTOMULTISTEPQUERYENGINE_INDEX_SUMMARY,
     AUTOMULTISTEPQUERYENGINE_QA_TEMPLATE,
     AUTOMULTISTEPQUERYENGINE_REFINE_TEMPLATE,
     AUTOMULTISTEPQUERYENGINE_STEPDECOMPOSE_QUERY_PROMPT,
@@ -90,6 +91,7 @@ from ..constants import (
     LLM_VERTEXAI_CLOUD_LOCATION,
     OPENBBCHAT_TOOL_DESCRIPTION,
     SEARCH_TOOL_DESCRIPTION,
+    WIKIPEDIA_TOOL_DESCRIPTION,
     WORLD_KNOWLEDGE_TOOL_DESCRIPTION,
 )
 from ..databases import db
@@ -293,6 +295,7 @@ def init_world_knowledge_tool(
     search_tool = DuckDuckGoSearchResults(api_wrapper=DuckDuckGoSearchAPIWrapper())
     search_tool.description = SEARCH_TOOL_DESCRIPTION or search_tool.description
     wikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
+    wikipedia_tool.description = WIKIPEDIA_TOOL_DESCRIPTION or wikipedia_tool.description
 
     def search_tool_func(x):
         return search_tool.run(x)
@@ -315,7 +318,7 @@ def init_world_knowledge_tool(
             descriptions=[search_tool.description, wikipedia_tool.description],
             llm=llamaindex_llm,
             verbose=verbose,
-            index_summary=WORLD_KNOWLEDGE_TOOL_DESCRIPTION,
+            index_summary=AUTOMULTISTEPQUERYENGINE_INDEX_SUMMARY,
         )
     else:
         query_engine = AutoMultiStepQueryEngine.from_simple_react_agent(
@@ -325,7 +328,7 @@ def init_world_knowledge_tool(
             descriptions=[search_tool.description, wikipedia_tool.description],
             llm=llamaindex_llm,
             verbose=verbose,
-            index_summary=WORLD_KNOWLEDGE_TOOL_DESCRIPTION,
+            index_summary=AUTOMULTISTEPQUERYENGINE_INDEX_SUMMARY,
         )
 
     # Customize the prompts
