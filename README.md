@@ -54,6 +54,7 @@ Welcome to the GPTStonks Chatbot API documentation! This API allows you to inter
   - [Configuration with environment variables ⚙️](#configuration-with-environment-variables-%EF%B8%8F)
   - [Contributing 🤝](#contributing-)
   - [License 📃](#license-)
+  - [Disclaimer](#disclaimer)
 
 ## Introduction 🌟
 
@@ -243,3 +244,7 @@ We welcome contributions from the community! If you have any suggestions, bug re
 ## License 📃
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Disclaimer
+
+GPTStonks Chat serves as an interface for accessing financial data and general knowledge. It is not intended to provide financial or investment advice.
