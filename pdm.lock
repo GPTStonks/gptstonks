@@ -5,7 +5,7 @@
 groups = ["default", "testing", "llamacpp", "docs", "notebooks"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:f97c44e745b54d89c0c1e8203f1aec01b2b97f29144d13b0bf534a8e2814cab2"
+content_hash = "sha256:a7c15b097a9f067391d36dbc0893b4e5e9c8f3d173a785cb1fa1c45a2cf2e95e"
 
 [[package]]
 name = "accelerate"
@@ -722,19 +722,21 @@ files = [
 
 [[package]]
 name = "curl-cffi"
-version = "0.5.10"
-requires_python = ">=3.7"
+version = "0.6.2"
+requires_python = ">=3.8"
 summary = "libcurl ffi bindings for Python, with impersonation support"
 dependencies = [
+    "certifi",
     "cffi>=1.12.0",
 ]
 files = [
-    {file = "curl_cffi-0.5.10-cp37-abi3-macosx_10_9_x86_64.whl", hash = "sha256:892603dab5e56fb72bfff7ae969136138971f63f63defe98232e1ec55cb0f1c6"},
-    {file = "curl_cffi-0.5.10-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:9937b8e13b1a6963c63e155b6621ec74649965105efedb919bc226fe731861cc"},
-    {file = "curl_cffi-0.5.10-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b537595b9610a4dd0927c09823925b4e32b1ce0fd04385bfc5bb72ab830720e6"},
-    {file = "curl_cffi-0.5.10-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1b2bc8822d23415f6533c8b750475e9bbc76764025fe1dcb5866dc033607fd7b"},
-    {file = "curl_cffi-0.5.10-cp37-abi3-win_amd64.whl", hash = "sha256:f9a1874b860c4e8db49bdfd9b9d4dc39999a1397d271ec78624c35c838e9e92a"},
-    {file = "curl_cffi-0.5.10.tar.gz", hash = "sha256:55bac4b73e2d80ceeaabea33270fc8ca6ace594128a46710242f2e688b4f8bfc"},
+    {file = "curl_cffi-0.6.2-cp38-abi3-macosx_10_9_x86_64.whl", hash = "sha256:23b8a2872b160718c04b06b1f8aa4fb1a2f4f94bce7040493515e081a27cad19"},
+    {file = "curl_cffi-0.6.2-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:ad3c1cf5360810825ec4bc3da425f26ee4098878a615dab9d309a99afd883ba9"},
+    {file = "curl_cffi-0.6.2-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3d01de6ed737ad1924aaa0198195b9020c38e77ce90ea3d72b9eacf4938c7adf"},
+    {file = "curl_cffi-0.6.2-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:37e513cc149d024a2d625e202f2cc9d4423d2937343ea2e06f797d99779e62dc"},
+    {file = "curl_cffi-0.6.2-cp38-abi3-win32.whl", hash = "sha256:12e829af97cbf7c1d5afef177e786f6f404ddf163b08897a1ed087cadbeb4837"},
+    {file = "curl_cffi-0.6.2-cp38-abi3-win_amd64.whl", hash = "sha256:3791b7a9ae4cb1298165300f2dc2d60a86779f055570ae83163fc2d8a74bf714"},
+    {file = "curl_cffi-0.6.2.tar.gz", hash = "sha256:9ee519e960b5fc6e0bbf13d0ecba9ce5f6306cb929354504bf03cc30f59a8f63"},
 ]
 
 [[package]]
@@ -895,17 +897,17 @@ files = [
 
 [[package]]
 name = "duckduckgo-search"
-version = "4.2"
+version = "5.1.0"
 requires_python = ">=3.8"
 summary = "Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine."
 dependencies = [
     "click>=8.1.7",
-    "curl-cffi>=0.5.10",
-    "lxml>=4.9.3",
+    "curl-cffi>=0.6.2",
+    "lxml>=5.1.0",
 ]
 files = [
-    {file = "duckduckgo_search-4.2-py3-none-any.whl", hash = "sha256:959e94f2e17868bcb595f950077923ec138d62fd0b77bfa168d3bca4a0f1f4f4"},
-    {file = "duckduckgo_search-4.2.tar.gz", hash = "sha256:55656d426a73b0b248d9a540a83e2a9c25db7b5e74df88d3604d0f33f91b13e5"},
+    {file = "duckduckgo_search-5.1.0-py3-none-any.whl", hash = "sha256:691a3e1c948ab9c4409af7891557bdfff66b9f0c521336b008bbc91675ba5353"},
+    {file = "duckduckgo_search-5.1.0.tar.gz", hash = "sha256:27522d05f1e3dc5c2fbe95bd12cc32ff96a790cf8ee993b2949158dee0dbfb1f"},
 ]
 
 [[package]]
