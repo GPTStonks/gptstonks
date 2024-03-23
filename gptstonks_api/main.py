@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="GPTStonks Chat CE API",
     description=API_DESCRIPTION,
-    version="0.0.3",
+    version="0.0.4",
     contact={
         "name": "GPTStonks, part of Mitheithel",
         "email": "contact@mitheithel.com",
