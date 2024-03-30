@@ -5,7 +5,7 @@
 groups = ["default", "testing", "llamacpp", "docs", "notebooks"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:a7c15b097a9f067391d36dbc0893b4e5e9c8f3d173a785cb1fa1c45a2cf2e95e"
+content_hash = "sha256:6a48d6b29f131ab97e411d27c7ff851cc73316c9f675ec835e29bd63cccc2db7"
 
 [[package]]
 name = "accelerate"
@@ -897,17 +897,17 @@ files = [
 
 [[package]]
 name = "duckduckgo-search"
-version = "5.1.0"
+version = "5.2.1"
 requires_python = ">=3.8"
 summary = "Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine."
 dependencies = [
     "click>=8.1.7",
     "curl-cffi>=0.6.2",
-    "lxml>=5.1.0",
+    "orjson>=3.9.15",
 ]
 files = [
-    {file = "duckduckgo_search-5.1.0-py3-none-any.whl", hash = "sha256:691a3e1c948ab9c4409af7891557bdfff66b9f0c521336b008bbc91675ba5353"},
-    {file = "duckduckgo_search-5.1.0.tar.gz", hash = "sha256:27522d05f1e3dc5c2fbe95bd12cc32ff96a790cf8ee993b2949158dee0dbfb1f"},
+    {file = "duckduckgo_search-5.2.1-py3-none-any.whl", hash = "sha256:3cd75f3605f53c7f753b3f948374ddd8b94b0b7e0c453b5824912d8aa8e3f64d"},
+    {file = "duckduckgo_search-5.2.1.tar.gz", hash = "sha256:01043cebcdbac6b79cf42ea955d9330278a7a7be666c80b872932c2c6a9de1a4"},
 ]
 
 [[package]]
