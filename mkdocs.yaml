@@ -73,7 +73,7 @@ plugins:
   - minify:
       minify_html: true
   - git-revision-date-localized
-  - social
+  # - social
   - privacy:
       assets: false
   - section-index
