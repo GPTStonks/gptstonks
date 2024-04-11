@@ -1,0 +1,13 @@
+name: "Docker build test in PRs"
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  docker-pr-build:
+    uses: ./.github/workflows/_build_docker.yaml
+    with:
+      working-directory: projects/gptstonks_api
+      dockerfile: projects/gptstonks_api/Dockerfile
+    secrets: inherit

@@ -1,0 +1,24 @@
+name: "Docker build and push when new version is available"
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  docker-versions-build-ghcr:
+    uses: ./.github/workflows/_build_docker_ghcr.yaml
+    with:
+      working-directory: projects/gptstonks_api
+      push: true
+      dockerfile: projects/gptstonks_api/Dockerfile
+      image-name: api
+    secrets: inherit
+
+  docker-versions-build-hub:
+    uses: ./.github/workflows/_build_docker_dockerhub.yaml
+    with:
+      working-directory: projects/gptstonks_api
+      push: true
+      dockerfile: projects/gptstonks_api/Dockerfile
+      image-name: api
+    secrets: inherit

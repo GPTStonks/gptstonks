@@ -1,11 +1,10 @@
 import asyncio
 
 import pytest
+from gptstonks.gptstonks_api.databases import db
+from gptstonks.gptstonks_api.initialization import init_api
+from gptstonks.gptstonks_api.main import app, app_data
 from httpx import AsyncClient, codes
-
-from gptstonks_api.databases import db
-from gptstonks_api.initialization import init_api
-from gptstonks_api.main import app, app_data
 
 
 async def run_multiple_async_queries():

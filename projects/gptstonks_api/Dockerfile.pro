@@ -1,3 +1,4 @@
+# Dockerfile for production environment. TLS certificate and key are required as volumes.
 FROM ubuntu:22.04
 
 # Update system
@@ -8,19 +9,16 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install requirements with PDM and download index
-COPY ./pyproject.toml /api/pyproject.toml
-COPY ./pdm.lock /api/pdm.lock
+COPY ./projects/gptstonks_api/pyproject.toml /api/pyproject.toml
+COPY ./projects/gptstonks_api/pdm.lock /api/pdm.lock
 WORKDIR /api
 RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.12.3 && \
     pdm install --no-editable --no-self && \
     pdm cache clear
 ENV PATH="/api/.venv/bin:$PATH"
 
-# Build openbb. See https://docs.openbb.co/platform/installation#post-installation
-RUN python -c "import openbb; openbb.build()"
-
 # Copy FastAPI app
-COPY ./gptstonks_api /api/gptstonks_api
+COPY ./projects/gptstonks_api/gptstonks/gptstonks_api /api/gptstonks_api
 WORKDIR /api/gptstonks_api
 
 # Expose port for FastAPI app to run on
@@ -42,5 +40,5 @@ ENV OPENSSL_CONF="/api/gptstonks_api/openssl.cnf"
 
 WORKDIR /api
 
-# Run the FastAPI app
-CMD ["uvicorn", "gptstonks_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the FastAPI app with SSL configuration
+CMD ["uvicorn", "gptstonks_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--ssl-keyfile", "/api/key.pem", "--ssl-certfile", "/api/cert.pem"]

@@ -1,22 +1,32 @@
-name: Tests
+name: Unitary tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main, "release/*", "dev"]
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+      # To avoid being billed 360 minutes if a step does not terminate
+      # (we've seen the setup-python step below do so!)
+      ci-timeout:
+        description: "The timeout of the ci job. The default is 25min"
+        default: 20
+        type: number
 
 jobs:
   run_tests_ubuntu:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: ${{ inputs.ci-timeout }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-22.04"]
         python-version: ["3.10"]
 
-    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
 
     steps:
       - name: Checkout
@@ -38,11 +48,16 @@ jobs:
   # upload code coverage report
   code-coverage:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: ${{ inputs.ci-timeout }}
 
     strategy:
       matrix:
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-22.04"]
         python-version: ["3.10"]
+
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
 
     steps:
       - name: Checkout

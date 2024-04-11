@@ -1,14 +1,14 @@
 site_name: GPTStonks API Documentation
-repo_url: https://github.com/gptstonks/api/
-site_url: https://gptstonks.github.io/api/
-repo_name: GPTStonks/api
-copyright: Copyright &copy; 2023 - 2024 Mitheithel, S.L.
+repo_url: https://github.com/gptstonks/gptstonks-core/
+site_url: https://gptstonks.github.io/gptstonks-core/
+repo_name: GPTStonks/gptstonks-core
+copyright: Copyright &copy; 2023 - 2024 Mitheithel
 docs_dir: docs
 nav:
   - Home: https://docs.gptstonks.net/
   # defer to gen-files + literate-nav
   - API Swagger: index.md
-  - API Reference: gptstonks_api/
+  - API Reference: projects/gptstonks_api/
   - Blog: https://docs.gptstonks.net/blog/
 theme:
   name: material
@@ -66,7 +66,7 @@ plugins:
   - search
   - gen-files:
       scripts:
-        - scripts/gen_ref_pages.py
+        - scripts/gen_ref_pages_gptstonks_api.py
   - literate-nav:
       nav_file: SUMMARY.md
   - mkdocstrings

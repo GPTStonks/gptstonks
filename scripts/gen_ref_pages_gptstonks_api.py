@@ -20,10 +20,7 @@ for path in sorted(Path(".").rglob("*.py")):
         parts = parts[:-1]
         doc_path = doc_path.with_name("index.md")
         full_doc_path = full_doc_path.with_name("index.md")
-    elif parts[-1] == "__main__":
-        continue
-
-    if parts[0] != "gptstonks_api":
+    elif parts[-1] == "__main__" or parts[1] != "gptstonks_api" or parts[2] == "tests":
         continue
 
     nav[parts] = doc_path.as_posix()
@@ -34,8 +31,8 @@ for path in sorted(Path(".").rglob("*.py")):
 
     mkdocs_gen_files.set_edit_path(full_doc_path, path)
 
-with mkdocs_gen_files.open("gptstonks_api/index.md", "w") as index_md, open(
-    "README.md"
+with mkdocs_gen_files.open("projects/gptstonks_api/index.md", "w") as index_md, open(
+    "projects/gptstonks_api/README.md"
 ) as readme_md:
-    lines = [line.replace("./assets", "../assets") for line in readme_md.readlines()]
+    lines = [line.replace("../../docs/assets", "../../assets") for line in readme_md.readlines()]
     index_md.writelines(lines)
