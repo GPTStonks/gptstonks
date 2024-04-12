@@ -11,7 +11,7 @@ jobs:
       working-directory: projects/gptstonks_api
       push: true
       dockerfile: projects/gptstonks_api/Dockerfile
-      image-name: api
+      image-name: gptstonks/api
     secrets: inherit
 
   docker-build-hub:
@@ -20,5 +20,5 @@ jobs:
       working-directory: projects/gptstonks_api
       push: true
       dockerfile: projects/gptstonks_api/Dockerfile
-      image-name: api
+      image-name: gptstonks/api
     secrets: inherit
