@@ -1,0 +1,14 @@
+name: Tests GPTStonks API
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, "release/*", "dev"]
+
+jobs:
+  run-tests-gptstonks-api:
+    uses: ./.github/workflows/_test.yaml
+    with:
+      working-directory: projects/gptstonks_api
+    secrets: inherit
