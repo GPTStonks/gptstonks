@@ -3,7 +3,7 @@
 </p>
 <p align="center">
   <!-- Waitlist Badge -->
-  <a href="https://gptstonks.net/joinwaitlist"><img src="./docs/assets/waitlist_badge.png" alt="Join Waitlist Badge"></a>
+  <a href="https://gptstonks.net/login"><img src="./docs/assets/waitlist_badge.png" alt="Join Waitlist Badge"></a>
   <!-- YT Badge -->
   <a href="https://www.youtube.com/@GPTStonks"><img src="https://img.shields.io/badge/channel-ff0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Youtube Channel Badge"></a>
   <!-- X Badge -->
