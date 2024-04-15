@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.12.3 && \
 ENV PATH="/api/.venv/bin:$PATH"
 
 # Copy FastAPI app
-COPY ./projects/gptstonks_api/gptstonks/gptstonks_api /api/gptstonks_api
+COPY ./projects/gptstonks_api/gptstonks/api /api/gptstonks_api
 WORKDIR /api/gptstonks_api
 
 # Expose port for FastAPI app to run on

@@ -163,7 +163,7 @@ docker run -it -p 8000:8000 --env-file .env ghcr.io/gptstonks/api:main
   5. Start the API:
 
   ```bash
-  uvicorn gptstonks.gptstonks_api.main:app --host 0.0.0.0 --port 8000
+  uvicorn gptstonks.api.main:app --host 0.0.0.0 --port 8000
   ```
 
 Now your GPTStonks Financial Chatbot API is up and running!

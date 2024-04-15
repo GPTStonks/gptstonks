@@ -79,7 +79,7 @@ GPTStonks is a financial chatbot powered by LLMs and enhanced with data framewor
 
 ## Getting Started 🛠️
 
-See [GPTStonks API](projects/gptstonks_api/README.md) to find the main implementation of the API behind https://gptstonks.net.
+See [GPTStonks API](projects/api/README.md) to find the main implementation of the API behind https://gptstonks.net.
 
 ## Contributing 🤝
 

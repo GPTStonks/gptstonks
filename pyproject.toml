@@ -1,7 +1,4 @@
 [project]
-name = ""
-version = ""
-description = "GPTStonks Core is a financial personal assistant ."
 authors = [
     {name = "GPTStonks", email = "gptstonks@gmail.com"},
 ]
@@ -23,6 +20,20 @@ docs = [
     "mkdocs-git-revision-date-localized-plugin>=1.2.4",
     "mkdocs-section-index>=0.3.8",
     "essentials-openapi[full]>=1.0.9",
+]
+api = [
+    "gptstonks-wrappers @ file:///${PROJECT_ROOT}/libs/gptstonks-wrappers",
+    "gptstonks-api @ file:///${PROJECT_ROOT}/projects/gptstonks_api",
+]
+
+[tool.isort]
+known_first_party = ["gptstonks"]
+known_third_party = ["httpx"]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "-e gptstonks-wrappers @ file:///${PROJECT_ROOT}/libs/gptstonks-wrappers",
+    "-e gptstonks-api @ file:///${PROJECT_ROOT}/projects/gptstonks_api"
 ]
 
 [build-system]

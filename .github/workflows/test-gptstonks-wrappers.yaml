@@ -1,4 +1,4 @@
-name: Tests GPTStonks API
+name: Tests gptstonks-wrappers
 
 on:
   push:
@@ -6,13 +6,13 @@ on:
   pull_request:
     paths:
       - ".github/workflows/_test.yaml"
-      - ".github/workflows/test-gptstonks-api.yaml"
-      - "projects/gptstonks_api/**"
+      - ".github/workflows/test-gptstonks-wrappers.yaml"
+      - "libs/gptstonks-wrappers/**"
   workflow_dispatch: # Allows to trigger the workflow manually in GitHub UI
 
 jobs:
-  run-tests-gptstonks-api:
+  run-tests-gptstonks-wrappers:
     uses: ./.github/workflows/_test.yaml
     with:
-      working-directory: projects/gptstonks_api
+      working-directory: libs/gptstonks-wrappers
     secrets: inherit

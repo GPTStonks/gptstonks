@@ -51,11 +51,12 @@ from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
 from llama_index.llms.langchain import LangChainLLM
 from llama_index.llms.openai import OpenAI as LlamaIndexOpenAI
-from openbb_chat.kernels import AutoLlamaIndex, AutoMultiStepQueryEngine
-from openbb_chat.llms.chat_model_llm_iface import ChatModelWithLLMIface
 from pymongo import MongoClient
 from pymongo.database import Database
 from transformers import GPTQConfig
+
+from gptstonks.wrappers.kernels import AutoLlamaIndex, AutoMultiStepQueryEngine
+from gptstonks.wrappers.llms.chat_model_llm_iface import ChatModelWithLLMIface
 
 from ..constants import (
     AGENT_EARLY_STOPPING_METHOD,

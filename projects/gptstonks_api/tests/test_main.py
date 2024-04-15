@@ -2,10 +2,11 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
-from gptstonks.gptstonks_api.agent import run_agent_in_background
-from gptstonks.gptstonks_api.databases import db
-from gptstonks.gptstonks_api.initialization import init_api
-from gptstonks.gptstonks_api.main import app_data
+
+from gptstonks.api.agent import run_agent_in_background
+from gptstonks.api.databases import db
+from gptstonks.api.initialization import init_api
+from gptstonks.api.main import app_data
 
 # client = TestClient(app)
 

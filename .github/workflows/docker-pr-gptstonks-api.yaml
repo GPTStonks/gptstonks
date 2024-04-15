@@ -1,8 +1,10 @@
 name: "Docker build test in PRs"
 on:
   pull_request:
-    branches:
-      - main
+    paths:
+      - ".github/workflows/_build_docker.yaml"
+      - ".github/workflows/docker-pr-gptstonks-api.yaml"
+      - "projects/gptstonks_api/**"
 
 jobs:
   docker-pr-build:

@@ -1,0 +1,60 @@
+[project]
+name = "gptstonks-wrappers"
+version = "0.0.1.post3"
+description = "Useful wrappers around common AI tools: LangChain, LlamaIndex, etc."
+authors = [
+  { name="GPTStonks Team", email="gptstonks@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10,<3.12"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+    "rank-bm25>=0.2.2",
+    "llama-index>=0.10.13",
+    "langchain>=0.0.353",
+    "llama-index-llms-openai>=0.1.6",
+    "llama-index-retrievers-bm25>=0.1.3",
+]
+license = {text = "MIT"}
+
+[project.optional-dependencies]
+huggingface = [
+  "llama-index-embeddings-huggingface>=0.1.3",
+  "llama-index-llms-huggingface>=0.1.3",
+]
+testing = [
+    "pytest",
+    "pytest-cov",
+    "trio>=0.23.2",
+    "sentence-transformers>=2.2.2",
+    "pytest-asyncio>=0.23.5",
+    "duckduckgo-search>=4.5.0",
+    "wikipedia>=1.4.0",
+]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "llama-index-embeddings-huggingface>=0.1.3",
+    "llama-index-llms-huggingface>=0.1.3",
+]
+
+[tool.pdm.build]
+excludes = ["./**/.git"]
+includes = ["gptstonks"]
+
+[project.urls]
+"Homepage" = "https://github.com/GPTStonks/gptstonks"
+"Bug Tracker" = "https://github.com/GPTStonks/gptstonks/issues"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

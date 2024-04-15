@@ -9,7 +9,6 @@ RUN apt-get update && \
 
 # Install requirements with PDM and download index
 COPY ./projects/gptstonks_api/pyproject.toml /api/pyproject.toml
-COPY ./projects/gptstonks_api/pdm.lock /api/pdm.lock
 WORKDIR /api
 RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.12.3 && \
     pdm install --no-editable --no-self && \
@@ -20,7 +19,7 @@ ENV PATH="/api/.venv/bin:$PATH"
 RUN python -c "import openbb; openbb.build()"
 
 # Copy FastAPI app
-COPY ./projects/gptstonks_api/gptstonks/gptstonks_api /api/gptstonks_api
+COPY ./projects/gptstonks_api/gptstonks/api /api/gptstonks_api
 WORKDIR /api/gptstonks_api
 
 # Expose port for FastAPI app to run on

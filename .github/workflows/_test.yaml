@@ -32,18 +32,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: |
-          pip install pdm
-          pdm install --no-editable --no-self -G testing
+        run: pdm install -d -G testing
 
       - name: Run pytest
-        run: source tests/env.sh && .venv/bin/pytest -v
+        run: source tests/env.sh && pdm run -v pytest tests
 
   # upload code coverage report
   code-coverage:
@@ -61,20 +59,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: |
-          pip install pdm
-          pdm install --no-editable --no-self -G testing
+        run: pdm install -d -G testing
 
       - name: Run tests and collect coverage
-        run: source tests/env.sh && .venv/bin/pytest --cov gptstonks_api
+        run: source tests/env.sh && pdm run -v pytest tests --cov gptstonks
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
