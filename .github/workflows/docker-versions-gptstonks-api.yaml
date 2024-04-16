@@ -1,4 +1,4 @@
-name: "Docker build and push when new version is available"
+name: "Docker build and push when a new version of for GPTStonks API is available"
 on:
   push:
     tags:
