@@ -24,7 +24,7 @@ for path in sorted(Path(".").rglob("*.py")):
         continue
     if (
         any([".venv" in part for part in parts])
-        or parts[1] != "gptstonks_api"
+        or parts[1] != "gptstonks-wrappers"
         or parts[2] == "tests"
     ):
         continue
@@ -38,8 +38,8 @@ for path in sorted(Path(".").rglob("*.py")):
     mkdocs_gen_files.set_edit_path(full_doc_path, path)
 
 with (
-    mkdocs_gen_files.open("projects/gptstonks_api/index.md", "w") as index_md,
-    open("projects/gptstonks_api/README.md") as readme_md,
+    mkdocs_gen_files.open("libs/gptstonks-wrappers/index.md", "w") as index_md,
+    open("libs/gptstonks-wrappers/README.md") as readme_md,
 ):
     lines = [line.replace("../../docs/assets", "../../assets") for line in readme_md.readlines()]
     index_md.writelines(lines)

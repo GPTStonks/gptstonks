@@ -6,6 +6,7 @@ If the constant is defined with environ it means it is required, as it will retu
 The list of env variables is provided in [Configuration with environment variables ⚙️](/api/#configuration-with-environment-variables).
 ///
 """
+
 import os
 
 MONGO_URI: str = os.environ["MONGO_URI"]

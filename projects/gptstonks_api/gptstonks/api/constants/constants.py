@@ -5,6 +5,7 @@ They include:
 - **API_DESCRIPTION:** rendered when /docs is called on the API.
 - **AI_PREFIX:** prefix to use by the agent when generating the response.
 """
+
 API_DESCRIPTION = """GPTStonks API allows interacting with financial data sources using natural language.
 
 # Features

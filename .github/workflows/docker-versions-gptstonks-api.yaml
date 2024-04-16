@@ -2,7 +2,7 @@ name: "Docker build and push when new version is available"
 on:
   push:
     tags:
-      - "*.*.*"
+      - "api.*.*.*"
 
 jobs:
   docker-versions-build-ghcr:

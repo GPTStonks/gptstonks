@@ -1,6 +1,6 @@
 [project]
-name = ""
-version = ""
+name = "gptstonks-api"
+version = "0.0.1"
 description = "GPTStonks API allows interacting with financial data sources using natural language."
 authors = [
     {name = "GPTStonks", email = "gptstonks@gmail.com"},
@@ -9,7 +9,7 @@ dependencies = [
     "pre-commit>=3.6.0",
     "fastapi>=0.104.1",
     "openbb==4.1.2",
-    "openbb-chat>=0.0.11",
+    "gptstonks-wrappers>=0.0.1.post3",
     "uvicorn>=0.23.2",
     "sentence-transformers>=2.2.2",
     "duckduckgo-search>=5.2.1",
@@ -42,9 +42,10 @@ dependencies = [
 requires-python = ">=3.10,<3.11"
 readme = "README.md"
 license = {text = "MIT"}
-packages = [
-  { include = "gptstonks" }
-]
+
+[tool.pdm.build]
+excludes = ["./**/.git"]
+includes = ["gptstonks"]
 
 [project.optional-dependencies]
 testing = [
@@ -57,9 +58,6 @@ testing = [
 llamacpp = [
     "llama-cpp-python>=0.2.23",
 ]
-
-# [tool.pdm.resolution.overrides]
-# Not needed for now
 notebooks = [
     "ipykernel>=6.29.3",
     "ipython>=8.22.2",

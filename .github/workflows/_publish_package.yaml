@@ -1,0 +1,47 @@
+name: Publish package to PyPI
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+      # To avoid being billed 360 minutes if a step does not terminate
+      # (we've seen the setup-python step below do so!)
+      ci-timeout:
+        description: "The timeout of the ci job. The default is 25min"
+        default: 25
+        type: number
+
+jobs:
+  publish-package:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      # This permission is needed for private repositories.
+      contents: read
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    timeout-minutes: ${{ inputs.ci-timeout }}
+    environment: release
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-22.04"]
+        python-version: ["3.10"]
+
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Publish package distributions to PyPI
+        run: pdm publish

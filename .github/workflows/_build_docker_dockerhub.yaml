@@ -10,7 +10,7 @@ on:
       # (we've seen the setup-python step below do so!)
       ci-timeout:
         description: "The timeout of the ci job. The default is 25min"
-        default: 20
+        default: 25
         type: number
       push:
         description: "Whether or not to push the image to the registry. The default is false."

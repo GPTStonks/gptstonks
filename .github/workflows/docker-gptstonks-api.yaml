@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - ".github/workflows/_build_docker.yaml"
+      - ".github/workflows/docker-pr-gptstonks-api.yaml"
+      - "projects/gptstonks_api/**"
 
 jobs:
   docker-build-ghcr:
