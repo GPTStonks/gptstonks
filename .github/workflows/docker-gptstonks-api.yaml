@@ -1,4 +1,4 @@
-name: "Docker build and push"
+name: "Docker build and push for GPTStonks API"
 on:
   push:
     branches:

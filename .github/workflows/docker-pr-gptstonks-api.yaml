@@ -1,4 +1,4 @@
-name: "Docker build test in PRs"
+name: "Docker build test in PRs for GPTStonks API"
 on:
   pull_request:
     paths:
