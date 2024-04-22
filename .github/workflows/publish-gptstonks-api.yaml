@@ -1,0 +1,17 @@
+name: Publish gptstonks-api to PyPI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/_publish_package.yaml"
+      - ".github/workflows/publish-gptstonks-api.yaml"
+      - "projects/gptstonks_api/**"
+  workflow_dispatch: # Allows to trigger the workflow manually in GitHub UI
+
+jobs:
+  publish-gptstonks-wrappers:
+    uses: ./.github/workflows/_publish_package.yaml
+    with:
+      working-directory: projects/gptstonks_api
+    secrets: inherit
