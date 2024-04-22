@@ -10,7 +10,12 @@ on:
   workflow_dispatch: # Allows to trigger the workflow manually in GitHub UI
 
 jobs:
-  publish-gptstonks-wrappers:
+  publish-gptstonks-api:
+    permissions:
+      # This permission is needed for private repositories.
+      contents: read
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
     uses: ./.github/workflows/_publish_package.yaml
     with:
       working-directory: projects/gptstonks_api
