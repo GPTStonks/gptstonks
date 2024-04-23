@@ -2,14 +2,9 @@ import os
 from unittest.mock import patch
 
 import pytest
-from langchain_community.tools import (
-    DuckDuckGoSearchResults,
-    RequestsGetTool,
-    WikipediaQueryRun,
-)
+from langchain_community.tools import DuckDuckGoSearchResults, WikipediaQueryRun
 from langchain_community.utilities import (
     DuckDuckGoSearchAPIWrapper,
-    TextRequestsWrapper,
     WikipediaAPIWrapper,
 )
 from llama_index.core.query_engine import BaseQueryEngine

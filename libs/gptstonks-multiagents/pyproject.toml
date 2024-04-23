@@ -48,6 +48,7 @@ includes = ["gptstonks"]
 [tool.pdm.dev-dependencies]
 dev = [
     "pytube>=15.0.0",
+    "langchain-openai>=0.1.3",
 ]
 
 [build-system]
