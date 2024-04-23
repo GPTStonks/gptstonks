@@ -33,6 +33,7 @@ known_third_party = ["httpx"]
 [tool.pdm.dev-dependencies]
 dev = [
     "-e gptstonks-wrappers @ file:///${PROJECT_ROOT}/libs/gptstonks-wrappers",
+    "-e gptstonks-multiagents @ file:///${PROJECT_ROOT}/libs/gptstonks-multiagents",
     "-e gptstonks-api @ file:///${PROJECT_ROOT}/projects/gptstonks_api"
 ]
 
