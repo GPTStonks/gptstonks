@@ -3,13 +3,7 @@ from functools import partial
 
 import gdown
 from langchain import hub
-from langchain.agents import (
-    AgentExecutor,
-    AgentType,
-    Tool,
-    create_react_agent,
-    initialize_agent,
-)
+from langchain.agents import AgentExecutor, Tool, create_react_agent
 from langchain.agents.format_scratchpad.openai_tools import (
     format_to_openai_tool_messages,
 )
@@ -22,15 +16,10 @@ from langchain_community.llms import (
     OpenAI,
     VertexAI,
 )
-from langchain_community.tools import (
-    DuckDuckGoSearchResults,
-    RequestsGetTool,
-    WikipediaQueryRun,
-)
+from langchain_community.tools import DuckDuckGoSearchResults, WikipediaQueryRun
 from langchain_community.utilities import (
     DuckDuckGoSearchAPIWrapper,
     PythonREPL,
-    TextRequestsWrapper,
     WikipediaAPIWrapper,
 )
 from langchain_core.language_models.llms import LLM
@@ -51,12 +40,9 @@ from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
 from llama_index.llms.langchain import LangChainLLM
 from llama_index.llms.openai import OpenAI as LlamaIndexOpenAI
-from pymongo import MongoClient
-from pymongo.database import Database
 from transformers import GPTQConfig
 
 from gptstonks.wrappers.kernels import AutoLlamaIndex, AutoMultiStepQueryEngine
-from gptstonks.wrappers.llms.chat_model_llm_iface import ChatModelWithLLMIface
 
 from ..constants import (
     AGENT_EARLY_STOPPING_METHOD,
@@ -95,7 +81,6 @@ from ..constants import (
     WIKIPEDIA_TOOL_DESCRIPTION,
     WORLD_KNOWLEDGE_TOOL_DESCRIPTION,
 )
-from ..databases import db
 from ..models import AppData
 from ..utils import get_openbb_chat_output
 

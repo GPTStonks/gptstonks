@@ -5,7 +5,7 @@
 groups = ["default", "api", "dev", "docs"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:958e2268c79abd0cfa8e00b18351a3b54b41c671eaa14a57855205d90beba37b"
+content_hash = "sha256:db6038454ed39d16381c64c88b7db00a7745cfbdf54b8cfb4c7c620e5b153089"
 
 [[package]]
 name = "accelerate"
@@ -139,6 +139,16 @@ marker = "python_version < \"3.11\""
 files = [
     {file = "async-timeout-4.0.3.tar.gz", hash = "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f"},
     {file = "async_timeout-4.0.3-py3-none-any.whl", hash = "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"},
+]
+
+[[package]]
+name = "asyncio"
+version = "3.4.3"
+summary = "reference implementation of PEP 3156"
+groups = ["dev"]
+files = [
+    {file = "asyncio-3.4.3-py3-none-any.whl", hash = "sha256:c4d18b22701821de07bd6aea8b53d21449ec0ec5680645e5317062ea21817d2d"},
+    {file = "asyncio-3.4.3.tar.gz", hash = "sha256:83360ff8bc97980e4ff25c964c7bd3923d333d177aa4f7fb736b019f26c7cb41"},
 ]
 
 [[package]]
@@ -726,6 +736,25 @@ files = [
 ]
 
 [[package]]
+name = "gptstonks-agents"
+version = "0.0.1"
+requires_python = ">=3.10,<3.11"
+editable = true
+path = "./libs/gptstonks-multiagents"
+summary = "Multi-agents implementations to perform complex tasks."
+groups = ["dev"]
+dependencies = [
+    "asyncio>=3.4.3",
+    "duckduckgo-search>=5.3.0",
+    "gptstonks-api>=0.0.1",
+    "gptstonks-wrappers>=0.0.1.post3",
+    "langchain>=0.1.16",
+    "langgraph>=0.0.38",
+    "llama-index>=0.10.30",
+    "wikipedia>=1.4.0",
+]
+
+[[package]]
 name = "gptstonks-api"
 version = "0.0.1"
 requires_python = ">=3.10,<3.11"
@@ -738,7 +767,7 @@ dependencies = [
     "duckduckgo-search>=5.2.1",
     "fastapi>=0.104.1",
     "gdown>=4.7.1",
-    "gptstonks-wrappers>=0.0.1",
+    "gptstonks-wrappers>=0.0.1.post3",
     "langchain-openai>=0.0.8",
     "langchain>=0.1.11",
     "langchainhub>=0.1.15",
@@ -770,11 +799,11 @@ dependencies = [
 
 [[package]]
 name = "gptstonks-wrappers"
-version = "0.0.1"
+version = "0.0.1.post3"
 requires_python = ">=3.10,<3.12"
 editable = true
 path = "./libs/gptstonks-wrappers"
-summary = "Useful Auto wrappers around common AI tools: LangChain, LlamaIndex, etc."
+summary = "Useful wrappers around common AI tools: LangChain, LlamaIndex, etc."
 groups = ["api", "dev"]
 dependencies = [
     "langchain>=0.0.353",
@@ -1175,6 +1204,20 @@ files = [
 ]
 
 [[package]]
+name = "langgraph"
+version = "0.0.38"
+requires_python = "<4.0,>=3.9.0"
+summary = "langgraph"
+groups = ["dev"]
+dependencies = [
+    "langchain-core<0.2.0,>=0.1.42",
+]
+files = [
+    {file = "langgraph-0.0.38-py3-none-any.whl", hash = "sha256:8b26f025f2163019cb38e677f6cef8d8f944e791f7ddb84402c211e7432e8330"},
+    {file = "langgraph-0.0.38.tar.gz", hash = "sha256:c13ce73c4764787e31f20854ebae505140ee5b750e8ba07c29e45969ce591c7b"},
+]
+
+[[package]]
 name = "langsmith"
 version = "0.1.47"
 requires_python = "<4.0,>=3.8.1"
@@ -1192,14 +1235,14 @@ files = [
 
 [[package]]
 name = "llama-index"
-version = "0.10.28"
+version = "0.10.30"
 requires_python = "<4.0,>=3.8.1"
 summary = "Interface between LLMs and your data"
 groups = ["api", "dev"]
 dependencies = [
     "llama-index-agent-openai<0.3.0,>=0.1.4",
     "llama-index-cli<0.2.0,>=0.1.2",
-    "llama-index-core<0.11.0,>=0.10.28",
+    "llama-index-core<0.11.0,>=0.10.30",
     "llama-index-embeddings-openai<0.2.0,>=0.1.5",
     "llama-index-indices-managed-llama-cloud<0.2.0,>=0.1.2",
     "llama-index-legacy<0.10.0,>=0.9.48",
@@ -1211,8 +1254,8 @@ dependencies = [
     "llama-index-readers-llama-parse<0.2.0,>=0.1.2",
 ]
 files = [
-    {file = "llama_index-0.10.28-py3-none-any.whl", hash = "sha256:2fe2857af6c2d9cefdd978931ebd09f78265a57df2d9d094d0c78869dd0715b8"},
-    {file = "llama_index-0.10.28.tar.gz", hash = "sha256:2ecf9d6da489cc3f99b1adaea50b1549efa55e04cd050f332da784a87c2db846"},
+    {file = "llama_index-0.10.30-py3-none-any.whl", hash = "sha256:7083014be8f74c6037cc33d629985a7505ee3c89b972503f8dd7d4ac7c45a4f4"},
+    {file = "llama_index-0.10.30.tar.gz", hash = "sha256:58fab1047c75e39803e8c394fab7d5e81ce97f27281bf7cba6bea40a7328562e"},
 ]
 
 [[package]]
@@ -1249,7 +1292,7 @@ files = [
 
 [[package]]
 name = "llama-index-core"
-version = "0.10.28"
+version = "0.10.30"
 requires_python = "<4.0,>=3.8.1"
 summary = "Interface between LLMs and your data"
 groups = ["api", "dev"]
@@ -1262,7 +1305,7 @@ dependencies = [
     "dirtyjson<2.0.0,>=1.0.8",
     "fsspec>=2023.5.0",
     "httpx",
-    "llamaindex-py-client<0.2.0,>=0.1.16",
+    "llamaindex-py-client<0.2.0,>=0.1.18",
     "nest-asyncio<2.0.0,>=1.5.8",
     "networkx>=3.0",
     "nltk<4.0.0,>=3.8.1",
@@ -1279,8 +1322,8 @@ dependencies = [
     "wrapt",
 ]
 files = [
-    {file = "llama_index_core-0.10.28-py3-none-any.whl", hash = "sha256:73e2ec86ea42a0efdc73dcfe46e03ba39ab7725699dcd791464c160d24a02cb1"},
-    {file = "llama_index_core-0.10.28.tar.gz", hash = "sha256:b454640396daa2678b638299e2a5e2539fa3548afd280d45d224fd3b303c20f4"},
+    {file = "llama_index_core-0.10.30-py3-none-any.whl", hash = "sha256:2f291ce2975f9dbf0ea87d684d3d8122ce216265f468f32baa2cf4ecfb34ed2a"},
+    {file = "llama_index_core-0.10.30.tar.gz", hash = "sha256:bed3f683606a0b0eb0839677c935a4b57b7bae509a95d380e51c6225630660e0"},
 ]
 
 [[package]]

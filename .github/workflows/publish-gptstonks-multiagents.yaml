@@ -1,17 +1,17 @@
-name: Publish gptstonks-api to PyPI
+name: Publish gptstonks-multiagents to PyPI
 
 on:
   push:
     branches: ["main"]
     paths:
       - ".github/workflows/_publish_package.yaml"
-      - ".github/workflows/publish-gptstonks-api.yaml"
-      - "projects/gptstonks_api/**"
+      - ".github/workflows/publish-gptstonks-multiagents.yaml"
+      - "libs/gptstonks-multiagents/**"
   workflow_dispatch: # Allows to trigger the workflow manually in GitHub UI
 
 jobs:
-  publish-gptstonks-api:
+  publish-gptstonks-multiagents:
     uses: ./.github/workflows/_publish_package.yaml
     with:
-      working-directory: projects/gptstonks_api
+      working-directory: libs/gptstonks-multiagents
     secrets: inherit

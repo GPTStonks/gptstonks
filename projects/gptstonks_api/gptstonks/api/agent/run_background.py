@@ -1,9 +1,7 @@
 import json
 
-from ..callbacks import ToolExecutionOrderCallback
 from ..databases import db
 from ..explicability import add_context_to_output
-from ..initialization import init_api
 from ..models import AppData, BaseAgentResponse, DataAgentResponse
 from ..utils import run_repl_over_openbb
 

@@ -16,21 +16,19 @@
   </a>
 </p>
 <p align="center">
-  <!-- Hugging Face Badge -->
-  <a href="https://huggingface.co/"><img src="https://img.shields.io/badge/Hugging%20Face-F58025?style=for-the-badge&logo=huggingface&logoColor=white" alt="Hugging Face Badge"></a>
+  <!-- LlamaIndex Badge -->
+  <a href="https://www.llamaindex.ai/"><img src="https://img.shields.io/badge/LlamaIndex-ac6aff?style=for-the-badge&logo=llamaindex&logoColor=white" alt="LlamaIndex Badge"></a>
   <!-- LangChain Badge -->
   <a href="https://langchain.com/">
     <img src="https://img.shields.io/badge/LangChain-005A9C?style=for-the-badge&logo=langchain&logoColor=white" alt="LangChain Badge">
   </a>
-  <!-- LlamaIndex Badge -->
-  <a href="https://www.llamaindex.ai/"><img src="https://img.shields.io/badge/LlamaIndex-ac6aff?style=for-the-badge&logo=llamaindex&logoColor=white" alt="LlamaIndex Badge"></a>
 </p>
 
-# GPTStonks Wrappers
+# GPTStonks Multi-Agents
 
 ## Description
 
-GPTStonks Wrappers provides Auto models, similar to the `transformers` library, but for common AI tools instead of models: LangChain, LlamaIndex, etc.
+GPTStonks Multi-Agents provides common multi-agent architectures to create copilots and autopilots that solve complex tasks.
 
 ## Development
 
@@ -49,6 +47,6 @@ pip install pdm
 pdm install -dG default
 ```
 
-## Sample usage with pre-trained models
+## Usage guide
 
-In the [API project](../../projects/gptstonks_api/), `AutoLlamaIndex` is used to perform [retrieval-augmented generation](https://arxiv.org/abs/2005.11401) (RAG) with [OpenBB](https://openbb.co)'s official documentation and with pre-trained models (e.g., OpenAI, Anthropic, Llama.cpp, etc.). Additionally, `AutoMultiStepQueryEngine` plans and executes Internet searches to solve complex queries.
+In the notebook [Multi-Agent With Tools](notebooks/multiagent_with_tools.ipynb) we showcase how multi-agents can be used for advanced knowledge gathering among other tasks. In this particular case to answer music-related questions and make recommendations.
