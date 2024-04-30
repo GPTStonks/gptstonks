@@ -1,2 +1,2 @@
 #!/bin/bash
-# Nothing to do
+export OPENAI_API_KEY=sk-...

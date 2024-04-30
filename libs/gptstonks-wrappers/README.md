@@ -51,4 +51,4 @@ pdm install -dG default
 
 ## Sample usage with pre-trained models
 
-In the [API project](../../projects/gptstonks_api/), `AutoLlamaIndex` is used to perform [retrieval-augmented generation](https://arxiv.org/abs/2005.11401) (RAG) with [OpenBB](https://openbb.co)'s official documentation and with pre-trained models (e.g., OpenAI, Anthropic, Llama.cpp, etc.). Additionally, `AutoMultiStepQueryEngine` plans and executes Internet searches to solve complex queries.
+In the [API project](../../projects/gptstonks_api/), `AutoRag` is used to perform [retrieval-augmented generation](https://arxiv.org/abs/2005.11401) (RAG) with [OpenBB](https://openbb.co)'s official documentation and with pre-trained models (e.g., OpenAI, Anthropic, Llama.cpp, etc.). Additionally, `AutoMultiStepQueryEngine` plans and executes Internet searches to solve complex queries.
