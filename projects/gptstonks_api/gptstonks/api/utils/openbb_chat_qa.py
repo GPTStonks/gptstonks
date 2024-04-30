@@ -3,12 +3,12 @@ from typing import List, Optional
 from langchain_community.utilities import PythonREPL
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 
-from gptstonks.wrappers.kernels.auto_llama_index import AutoLlamaIndex
+from gptstonks.wrappers.kernels import AutoRag
 
 
 async def get_openbb_chat_output(
     query_str: str,
-    auto_llama_index: AutoLlamaIndex,
+    auto_rag: AutoRag,
     node_postprocessors: Optional[List[BaseNodePostprocessor]] = None,
 ) -> str:
     """Get OpenBB tool output using RAG.
@@ -21,17 +21,17 @@ async def get_openbb_chat_output(
 
     Args:
         query_str (`str`): input to OpenBB's tool, given by the agent's LLM.
-        auto_llama_index (`AutoLlamaIndex`): contains all the necessary tools to perform the RAG.
+        auto_rag (`AutoRag`): contains all the necessary tools to perform the RAG.
         node_postprocessors (`Optional[List[BaseNodePostprocessor]]`): postprocessors to apply to the retrieved nodes.
 
     Returns:
         `str`: response by the RAG system to the given query.
     """
-    nodes = await auto_llama_index.aretrieve(query_str)
+    nodes = await auto_rag.aretrieve(query_str)
     if node_postprocessors is not None:
         for node_postprocessor in node_postprocessors:
             nodes = node_postprocessor.postprocess_nodes(nodes)
-    return (await auto_llama_index.asynth(str_or_query_bundle=query_str, nodes=nodes)).response
+    return (await auto_rag.asynth(str_or_query_bundle=query_str, nodes=nodes)).response
 
 
 def fix_frequent_code_errors(prev_code: str, openbb_pat: Optional[str] = None) -> str:

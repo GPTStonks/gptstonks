@@ -30,6 +30,7 @@ from langchain_core.prompts import (
 )
 from langchain_openai import ChatOpenAI
 from llama_index.core import PromptTemplate as LlamaIndexPromptTemplate
+from llama_index.core import VectorStoreIndex
 from llama_index.core.langchain_helpers.agents import IndexToolConfig, LlamaIndexTool
 from llama_index.core.llms.llm import LLM as LlamaIndexLLM
 from llama_index.core.postprocessor import (
@@ -40,9 +41,11 @@ from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
 from llama_index.llms.langchain import LangChainLLM
 from llama_index.llms.openai import OpenAI as LlamaIndexOpenAI
+from llama_index.vector_stores.pinecone import PineconeVectorStore
+from pinecone import Pinecone
 from transformers import GPTQConfig
 
-from gptstonks.wrappers.kernels import AutoLlamaIndex, AutoMultiStepQueryEngine
+from gptstonks.wrappers.kernels import AutoMultiStepQueryEngine, AutoRag
 
 from ..constants import (
     AGENT_EARLY_STOPPING_METHOD,
@@ -51,8 +54,8 @@ from ..constants import (
     AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
     AUTOLLAMAINDEX_QA_TEMPLATE,
     AUTOLLAMAINDEX_REFINE_TEMPLATE,
+    AUTOLLAMAINDEX_REMOTE_VECTOR_STORE_API_KEY,
     AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR,
-    AUTOLLAMAINDEX_RETRIEVER_TYPE,
     AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF,
     AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
     AUTOLLAMAINDEX_VSI_GDRIVE_URI,
@@ -216,7 +219,7 @@ def load_llm_model() -> LLM:
 
 
 def init_openbb_async_tool(
-    auto_llama_index: AutoLlamaIndex,
+    auto_rag: AutoRag,
     node_postprocessors: list[BaseNodePostprocessor],
     name: str = "OpenBB",
     return_direct: bool = True,
@@ -224,7 +227,7 @@ def init_openbb_async_tool(
     """Initialize OpenBB asynchronous agent tool.
 
     Args:
-        auto_llama_index (`AutoLlamaIndex`):
+        auto_rag (`AutoRag`):
             contains the necessary objects for performing RAG (i.e., vector store, embedding model, etc.).
         node_postprocessors (`list[BaseNodePostprocessor]`):
             list of LlamaIndex's postprocessors to apply to the retrieved nodes.
@@ -240,7 +243,7 @@ def init_openbb_async_tool(
         func=None,
         coroutine=partial(
             get_openbb_chat_output,
-            auto_llama_index=auto_llama_index,
+            auto_rag=auto_rag,
             node_postprocessors=node_postprocessors,
         ),
         description=OPENBBCHAT_TOOL_DESCRIPTION,
@@ -386,18 +389,24 @@ def init_agent_tools(
     else:
         llamaindex_llm = LlamaIndexOpenAI(model=llm.model_name, temperature=llm.temperature)
 
-    # Load AutoLlamaIndex
-    auto_llama_index = AutoLlamaIndex(
-        path=AUTOLLAMAINDEX_VSI_PATH,
+    # Initialize connection to Pinecone
+    # NOTE: Modify to use a different vector store from LlamaIndex
+    pc = Pinecone(api_key=AUTOLLAMAINDEX_REMOTE_VECTOR_STORE_API_KEY)
+    vector_store = PineconeVectorStore(
+        pinecone_index=pc.Index(AUTOLLAMAINDEX_VSI_PATH), add_sparse_vector=True
+    )
+    auto_rag = AutoRag(
+        vsi=VectorStoreIndex.from_vector_store(vector_store=vector_store),
         embedding_model_id=embed_model,
         llm_model=llamaindex_llm,
         context_window=AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
         qa_template_str=AUTOLLAMAINDEX_QA_TEMPLATE,
         refine_template_str=AUTOLLAMAINDEX_REFINE_TEMPLATE,
         other_llama_index_vector_index_retriever_kwargs={
-            "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K
+            "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
+            "vector_store_query_mode": "hybrid",
         },
-        retriever_type=AUTOLLAMAINDEX_RETRIEVER_TYPE or "hybrid",
+        retriever_type="vector",
     )
 
     return [
@@ -408,7 +417,7 @@ def init_agent_tools(
             verbose=True,
         ),
         init_openbb_async_tool(
-            auto_llama_index=auto_llama_index,
+            auto_rag=auto_rag,
             node_postprocessors=node_postprocessors,
             return_direct=False,
         ),
@@ -423,9 +432,6 @@ def init_api(app_data: AppData):
     """
 
     set_api_debug()
-
-    vsi_path = AUTOLLAMAINDEX_VSI_PATH.split(":")[-1]
-    download_vsi(vsi_path=vsi_path)
 
     embed_model = load_embed_model()
 
