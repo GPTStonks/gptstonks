@@ -56,6 +56,7 @@ from ..constants import (
     AUTOLLAMAINDEX_REFINE_TEMPLATE,
     AUTOLLAMAINDEX_REMOTE_VECTOR_STORE_API_KEY,
     AUTOLLAMAINDEX_REMOVE_METADATA_POSTPROCESSOR,
+    AUTOLLAMAINDEX_RETRIEVER_TYPE,
     AUTOLLAMAINDEX_SIMILARITY_POSTPROCESSOR_CUTOFF,
     AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
     AUTOLLAMAINDEX_VSI_GDRIVE_URI,
@@ -389,25 +390,39 @@ def init_agent_tools(
     else:
         llamaindex_llm = LlamaIndexOpenAI(model=llm.model_name, temperature=llm.temperature)
 
-    # Initialize connection to Pinecone
-    # NOTE: Modify to use a different vector store from LlamaIndex
-    pc = Pinecone(api_key=AUTOLLAMAINDEX_REMOTE_VECTOR_STORE_API_KEY)
-    vector_store = PineconeVectorStore(
-        pinecone_index=pc.Index(AUTOLLAMAINDEX_VSI_PATH), add_sparse_vector=True
-    )
-    auto_rag = AutoRag(
-        vsi=VectorStoreIndex.from_vector_store(vector_store=vector_store),
-        embedding_model_id=embed_model,
-        llm_model=llamaindex_llm,
-        context_window=AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
-        qa_template_str=AUTOLLAMAINDEX_QA_TEMPLATE,
-        refine_template_str=AUTOLLAMAINDEX_REFINE_TEMPLATE,
-        other_llama_index_vector_index_retriever_kwargs={
-            "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
-            "vector_store_query_mode": "hybrid",
-        },
-        retriever_type="vector",
-    )
+    if AUTOLLAMAINDEX_REMOTE_VECTOR_STORE_API_KEY:
+        # Initialize connection to Pinecone
+        # NOTE: Modify to use a different vector store from LlamaIndex
+        pc = Pinecone(api_key=AUTOLLAMAINDEX_REMOTE_VECTOR_STORE_API_KEY)
+        vector_store = PineconeVectorStore(
+            pinecone_index=pc.Index(AUTOLLAMAINDEX_VSI_PATH), add_sparse_vector=True
+        )
+        auto_rag = AutoRag(
+            vsi=VectorStoreIndex.from_vector_store(vector_store=vector_store),
+            embedding_model_id=embed_model,
+            llm_model=llamaindex_llm,
+            context_window=AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
+            qa_template_str=AUTOLLAMAINDEX_QA_TEMPLATE,
+            refine_template_str=AUTOLLAMAINDEX_REFINE_TEMPLATE,
+            other_llama_index_vector_index_retriever_kwargs={
+                "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
+                "vector_store_query_mode": "hybrid",
+            },
+            retriever_type="vector",
+        )
+    else:
+        auto_rag = AutoRag(
+            vsi=AUTOLLAMAINDEX_VSI_PATH,
+            embedding_model_id=embed_model,
+            llm_model=llamaindex_llm,
+            context_window=AUTOLLAMAINDEX_LLM_CONTEXT_WINDOW,
+            qa_template_str=AUTOLLAMAINDEX_QA_TEMPLATE,
+            refine_template_str=AUTOLLAMAINDEX_REFINE_TEMPLATE,
+            other_llama_index_vector_index_retriever_kwargs={
+                "similarity_top_k": AUTOLLAMAINDEX_VIR_SIMILARITY_TOP_K,
+            },
+            retriever_type=AUTOLLAMAINDEX_RETRIEVER_TYPE or "hybrid",
+        )
 
     return [
         init_world_knowledge_tool(
