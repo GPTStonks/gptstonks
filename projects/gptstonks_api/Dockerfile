@@ -9,6 +9,7 @@ RUN apt-get update && \
 
 # Install requirements with PDM and download index
 COPY ./projects/gptstonks_api/pyproject.toml /api/pyproject.toml
+COPY ./pdm.lock /api/pdm.lock
 WORKDIR /api
 RUN pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.3 pdm==2.12.3 && \
     pdm install --no-editable --no-self && \
