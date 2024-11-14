@@ -1,13 +1,14 @@
 import json
+import warnings
 from functools import partial
 
-from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
+from pydantic import BaseModel, Field
 
 try:
     from pytube import Search
 except ModuleNotFoundError:
-    raise ModuleNotFoundError("PyTube needs to be installed: `pip install pytube`")
+    warnings.warn("PyTube needs to be installed to use YoutubeSearchTool: `pip install pytube`")
 
 
 class YoutubeSearchTool(StructuredTool):

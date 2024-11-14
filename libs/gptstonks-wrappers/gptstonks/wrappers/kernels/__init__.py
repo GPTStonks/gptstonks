@@ -6,3 +6,4 @@ from .auto_multistep_query_engine import (
 )
 from .auto_rag import AutoLlamaIndex as AutoLlamaIndex
 from .auto_rag import AutoRag as AutoRag
+from .mitheithel import MitheithelAPI as MitheithelAPI

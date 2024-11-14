@@ -1,5 +1,5 @@
 from langchain.agents.agent import AgentExecutor
-from langchain_community.utilities import PythonREPL
+from langchain_experimental.utilities.python import PythonREPL
 from pydantic import BaseModel, ConfigDict
 
 

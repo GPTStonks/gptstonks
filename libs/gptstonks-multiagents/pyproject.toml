@@ -1,6 +1,6 @@
 [project]
 name = "gptstonks-multiagents"
-version = "0.0.1"
+version = "0.0.2"
 description = "Multi-Agent architectures to create copilots and autopilots."
 authors = [
   { name="GPTStonks Team", email="gptstonks@gmail.com" }
@@ -14,13 +14,14 @@ classifiers = [
 ]
 dependencies = [
     "gptstonks-wrappers>=0.0.1.post3",
-    "langgraph>=0.0.38",
-    "langchain>=0.1.16",
+    "langgraph>=0.2.20,<0.3",
+    "langchain>=0.3,<0.4",
     "asyncio>=3.4.3",
     "llama-index>=0.10.30",
     "duckduckgo-search>=5.3.0",
     "wikipedia>=1.4.0",
     "llama-index-llms-openai>=0.1.16",
+    "langchain-community<0.4,>=0.3",
 ]
 license = {text = "MIT"}
 
