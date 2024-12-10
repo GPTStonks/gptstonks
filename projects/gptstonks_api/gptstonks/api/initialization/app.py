@@ -19,7 +19,6 @@ from langchain_community.llms import (
 from langchain_community.tools import DuckDuckGoSearchResults, WikipediaQueryRun
 from langchain_community.utilities import (
     DuckDuckGoSearchAPIWrapper,
-    PythonREPL,
     WikipediaAPIWrapper,
 )
 from langchain_core.language_models.llms import LLM
@@ -28,6 +27,7 @@ from langchain_core.prompts import (
     MessagesPlaceholder,
     PromptTemplate,
 )
+from langchain_experimental.utilities.python import PythonREPL
 from langchain_openai import ChatOpenAI
 from llama_index.core import PromptTemplate as LlamaIndexPromptTemplate
 from llama_index.core import VectorStoreIndex
@@ -45,6 +45,7 @@ from llama_index.vector_stores.pinecone import PineconeVectorStore
 from pinecone import Pinecone
 from transformers import GPTQConfig
 
+from gptstonks.multiagents.tools import MitheithelSearchTool
 from gptstonks.wrappers.kernels import AutoMultiStepQueryEngine, AutoRag
 
 from ..constants import (
@@ -425,12 +426,7 @@ def init_agent_tools(
         )
 
     return [
-        init_world_knowledge_tool(
-            llamaindex_llm=llamaindex_llm,
-            use_openai_agent=use_openai_agent,
-            return_direct=False,
-            verbose=True,
-        ),
+        MitheithelSearchTool.create(),
         init_openbb_async_tool(
             auto_rag=auto_rag,
             node_postprocessors=node_postprocessors,

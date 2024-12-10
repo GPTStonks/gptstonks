@@ -1,3 +1,4 @@
 from .ddg_results_json import DuckDuckGoSearchResultsJson as DuckDuckGoSearchResultsJson
+from .mitheithel_search import MitheithelSearchTool as MitheithelSearchTool
 from .world_knowledge import WorldKnowledgeTool as WorldKnowledgeTool
 from .youtube_search import YoutubeSearchTool as YoutubeSearchTool

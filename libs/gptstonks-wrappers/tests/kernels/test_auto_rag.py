@@ -1,15 +1,10 @@
 from unittest.mock import patch
 
-from llama_index.core import (
-    ServiceContext,
-    SimpleDirectoryReader,
-    StorageContext,
-    VectorStoreIndex,
-)
+from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex
+from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
-from llama_index.llms.huggingface import HuggingFaceLLM
 from llama_index.llms.openai import OpenAI
 from llama_index.retrievers.bm25 import BM25Retriever
 
@@ -44,16 +39,7 @@ def test_auto_llama_index(mocked_query, mocked_retrieve):
 def test_auto_llama_index_persistance(mocked_query, mocked_retrieve):
     # persist an index to test loading
     docs_sdk = SimpleDirectoryReader("../../docs", recursive=True).load_data()
-
-    # service context to customize the models used by LlamaIndex
-    service_context = ServiceContext.from_defaults(
-        embed_model="local:sentence-transformers/all-MiniLM-L6-v2",
-        llm=HuggingFaceLLM(
-            tokenizer_name="sshleifer/tiny-gpt2",
-            model_name="sshleifer/tiny-gpt2",
-        ),
-    )
-    nodes_sdk = service_context.node_parser.get_nodes_from_documents(docs_sdk)
+    nodes_sdk = SentenceSplitter().get_nodes_from_documents(docs_sdk)
 
     # initialize storage context (by default it's in-memory)
     storage_context = StorageContext.from_defaults()
@@ -63,7 +49,7 @@ def test_auto_llama_index_persistance(mocked_query, mocked_retrieve):
     index = VectorStoreIndex(
         nodes_sdk,
         show_progress=True,
-        service_context=service_context,
+        embed_model="local:sentence-transformers/all-MiniLM-L6-v2",
         storage_context=storage_context,
     )
     index.storage_context.persist(persist_dir="./.vsi_cache")
@@ -203,16 +189,7 @@ def test_auto_rag(mocked_query, mocked_retrieve):
 def test_auto_rag_persistance(mocked_query, mocked_retrieve):
     # persist an index to test loading
     docs_sdk = SimpleDirectoryReader("../../docs", recursive=True).load_data()
-
-    # service context to customize the models used by LlamaIndex
-    service_context = ServiceContext.from_defaults(
-        embed_model="local:sentence-transformers/all-MiniLM-L6-v2",
-        llm=HuggingFaceLLM(
-            tokenizer_name="sshleifer/tiny-gpt2",
-            model_name="sshleifer/tiny-gpt2",
-        ),
-    )
-    nodes_sdk = service_context.node_parser.get_nodes_from_documents(docs_sdk)
+    nodes_sdk = SentenceSplitter().get_nodes_from_documents(docs_sdk)
 
     # initialize storage context (by default it's in-memory)
     storage_context = StorageContext.from_defaults()
@@ -222,7 +199,7 @@ def test_auto_rag_persistance(mocked_query, mocked_retrieve):
     index = VectorStoreIndex(
         nodes_sdk,
         show_progress=True,
-        service_context=service_context,
+        embed_model="local:sentence-transformers/all-MiniLM-L6-v2",
         storage_context=storage_context,
     )
     index.storage_context.persist(persist_dir="./.vsi_cache")

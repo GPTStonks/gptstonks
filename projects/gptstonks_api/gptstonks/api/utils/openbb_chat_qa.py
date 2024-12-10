@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from langchain_community.utilities import PythonREPL
+from langchain_experimental.utilities.python import PythonREPL
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 
 from gptstonks.wrappers.kernels import AutoRag
