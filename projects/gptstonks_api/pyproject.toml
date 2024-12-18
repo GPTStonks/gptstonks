@@ -3,7 +3,7 @@ name = "gptstonks-api"
 version = "0.0.1"
 description = "GPTStonks API allows interacting with financial data sources using natural language."
 authors = [
-    {name = "GPTStonks", email = "gptstonks@gmail.com"},
+    {name = "GPTStonks", email = "hello@gptstonks.net"},
 ]
 dependencies = [
     "pre-commit>=3.6.0",
