@@ -3,7 +3,7 @@ name = "gptstonks-multiagents"
 version = "0.0.2"
 description = "Multi-Agent architectures to create copilots and autopilots."
 authors = [
-  { name="GPTStonks Team", email="gptstonks@gmail.com" }
+  { name="GPTStonks Team", email="hello@gptstonks.net" }
 ]
 readme = "README.md"
 requires-python = ">=3.10,<3.11"
