@@ -13,7 +13,7 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 dependencies = [
-    "gptstonks-wrappers>=0.0.1.post3",
+    "gptstonks-wrappers>=0.0.3.post1",
     "langgraph>=0.2.20,<0.3",
     "langchain>=0.3,<0.4",
     "asyncio>=3.4.3",
@@ -22,6 +22,7 @@ dependencies = [
     "wikipedia>=1.4.0",
     "llama-index-llms-openai>=0.1.16",
     "langchain-community<0.4,>=0.3",
+    "websockets>=14.1",
 ]
 license = {text = "MIT"}
 
