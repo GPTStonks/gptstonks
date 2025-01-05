@@ -1,6 +1,6 @@
 [project]
 name = "gptstonks-multiagents"
-version = "0.0.2"
+version = "0.0.3"
 description = "Multi-Agent architectures to create copilots and autopilots."
 authors = [
   { name="GPTStonks Team", email="hello@gptstonks.net" }
